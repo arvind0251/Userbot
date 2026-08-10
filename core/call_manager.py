@@ -21,11 +21,13 @@ def get_queue(chat_id: int) -> list:
 
 async def play_track(chat_id: int, stream_url: str, video: bool = False):
     """Join / change stream in a chat's VC with the given direct stream URL."""
-    stream = MediaStream(
-        stream_url,
-        audio_parameters=AudioQuality.STUDIO,
-        video_parameters=VideoQuality.SD_480p if video else None,
-    )
+    stream_kwargs = {"audio_parameters": AudioQuality.STUDIO}
+    if video:
+        stream_kwargs["video_parameters"] = VideoQuality.SD_480p
+    else:
+        stream_kwargs["video_flags"] = MediaStream.Flags.IGNORE
+
+    stream = MediaStream(stream_url, **stream_kwargs)
     try:
         await pytgcalls.play(chat_id, stream)
     except Exception:
