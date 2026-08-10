@@ -55,4 +55,12 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    # NOTE: We intentionally use get_event_loop() + run_until_complete() here
+    # instead of asyncio.run(). Pyrogram/PyTgCalls clients are created at
+    # import time (module level in core/clients.py, core/call_manager.py) and
+    # grab whatever event loop exists at that moment via get_event_loop().
+    # asyncio.run() always creates a brand-new loop, which would then differ
+    # from the one the clients already grabbed -> "attached to a different
+    # loop" RuntimeError. Using get_event_loop() here reuses that same loop.
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
