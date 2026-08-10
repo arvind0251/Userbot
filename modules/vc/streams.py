@@ -39,16 +39,22 @@ def _baby_fetch_sync(vidid: str, want_video: bool) -> str:
     return stream_url
 
 
-def _wait_until_ready_sync(stream_url: str, timeout: int = 60) -> bool:
+def _wait_until_ready_sync(stream_url: str, timeout: int = 90) -> bool:
     start = time.time()
     while time.time() - start < timeout:
         try:
-            r = requests.head(stream_url, timeout=10, allow_redirects=True)
+            # Some APIs reject HEAD requests, so use a ranged GET instead —
+            # pull just the first byte to confirm the stream is playable
+            # without downloading the whole file.
+            headers = {"Range": "bytes=0-1"}
+            r = requests.get(stream_url, headers=headers, timeout=15, stream=True)
             if r.status_code in (200, 206):
+                r.close()
                 return True
+            r.close()
         except Exception:
             pass
-        time.sleep(2)
+        time.sleep(3)
     return False
 
 
