@@ -28,11 +28,7 @@ async def play_track(chat_id: int, stream_url: str, video: bool = False):
         stream_kwargs["video_flags"] = MediaStream.Flags.IGNORE
 
     stream = MediaStream(stream_url, **stream_kwargs)
-    try:
-        await pytgcalls.play(chat_id, stream)
-    except Exception:
-        # Not connected yet in this chat -> join fresh
-        await pytgcalls.join_group_call(chat_id, stream)
+    await pytgcalls.play(chat_id, stream)
 
 
 async def stop_stream(chat_id: int):
