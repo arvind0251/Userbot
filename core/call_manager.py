@@ -20,17 +20,27 @@ def get_queue(chat_id: int) -> list:
 
 
 async def play_track(chat_id: int, stream_url: str, video: bool = False):
-    """Join / change stream in a chat's VC with the given direct stream URL."""
-    stream = MediaStream(
-        stream_url,
-        audio_parameters=AudioQuality.STUDIO,
-        video_parameters=VideoQuality.SD_480p if video else None,
-    )
-    try:
-        await pytgcalls.play(chat_id, stream)
-    except Exception:
-        # Not connected yet in this chat -> join fresh
-        await pytgcalls.join_group_call(chat_id, stream)
+    """Join / change stream in a chat's VC with the given direct stream URL.
+
+    NOTE: py-tgcalls v2.x's `play()` handles both the initial join AND
+    switching an already-active stream — there's no separate
+    join_group_call() in this version, so we just call play() once.
+    """
+    if video:
+        stream = MediaStream(
+            stream_url,
+            audio_parameters=AudioQuality.STUDIO,
+            video_parameters=VideoQuality.SD_480p,
+        )
+    else:
+        # Don't pass video_parameters at all for audio-only — the library
+        # doesn't accept None there, only a real VideoQuality/VideoParameters
+        # or omitting the kwarg (which defaults to audio-only + no video).
+        stream = MediaStream(
+            stream_url,
+            audio_parameters=AudioQuality.STUDIO,
+        )
+    await pytgcalls.play(chat_id, stream)
 
 
 async def stop_stream(chat_id: int):
