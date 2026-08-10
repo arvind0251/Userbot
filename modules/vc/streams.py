@@ -48,7 +48,10 @@ def _wait_until_ready_sync(stream_url: str, timeout: int = 90) -> bool:
             # without downloading the whole file.
             headers = {"Range": "bytes=0-1"}
             r = requests.get(stream_url, headers=headers, timeout=15, stream=True)
-            if r.status_code in (200, 206):
+            # Some CDNs (e.g. this one, behind Cloudflare/Railway) return 204
+            # No Content for a ranged HEAD-like probe once the stream is
+            # ready, instead of 200/206 — treat that as "ready" too.
+            if r.status_code in (200, 206, 204):
                 r.close()
                 return True
             r.close()
