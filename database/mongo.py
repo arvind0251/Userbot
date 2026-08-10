@@ -1,60 +1,100 @@
-from motor.motor_asyncio import AsyncIOMotorClient
-from config import MONGO_DB_URL
+"""
+Local JSON-file storage — replaces MongoDB entirely so no external DB/network
+dependency is needed. Same function names/signatures as before, so no other
+module needs to change.
+"""
+import json
+import asyncio
+import os
 
-_client = AsyncIOMotorClient(MONGO_DB_URL) if MONGO_DB_URL else None
-_db = _client["PhoenixUB"] if _client else None
+_DATA_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "storage.json")
+_lock = asyncio.Lock()
 
-sudoers_col = _db["sudoers"] if _db is not None else None
-gban_col = _db["gbans"] if _db is not None else None
-chats_col = _db["chats"] if _db is not None else None
+_DEFAULT = {"sudoers": [], "gbans": {}, "chats": {}}
+
+
+def _read() -> dict:
+    if not os.path.exists(_DATA_FILE):
+        return dict(_DEFAULT)
+    try:
+        with open(_DATA_FILE, "r") as f:
+            data = json.load(f)
+        for k, v in _DEFAULT.items():
+            data.setdefault(k, v)
+        return data
+    except (json.JSONDecodeError, FileNotFoundError):
+        return dict(_DEFAULT)
+
+
+def _write(data: dict):
+    tmp = _DATA_FILE + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(data, f, indent=2)
+    os.replace(tmp, _DATA_FILE)
 
 
 # ===================== Sudo users =====================
 async def add_sudo(user_id: int):
-    await sudoers_col.update_one({"user_id": user_id}, {"$set": {"user_id": user_id}}, upsert=True)
+    async with _lock:
+        data = _read()
+        if user_id not in data["sudoers"]:
+            data["sudoers"].append(user_id)
+        _write(data)
 
 
 async def remove_sudo(user_id: int):
-    await sudoers_col.delete_one({"user_id": user_id})
+    async with _lock:
+        data = _read()
+        data["sudoers"] = [u for u in data["sudoers"] if u != user_id]
+        _write(data)
 
 
 async def get_sudoers() -> list[int]:
-    cursor = sudoers_col.find({})
-    return [doc["user_id"] async for doc in cursor]
+    async with _lock:
+        return list(_read()["sudoers"])
 
 
 # ===================== Global ban =====================
 async def gban_user(user_id: int, reason: str = "No reason given"):
-    await gban_col.update_one(
-        {"user_id": user_id}, {"$set": {"user_id": user_id, "reason": reason}}, upsert=True
-    )
+    async with _lock:
+        data = _read()
+        data["gbans"][str(user_id)] = reason
+        _write(data)
 
 
 async def ungban_user(user_id: int):
-    await gban_col.delete_one({"user_id": user_id})
+    async with _lock:
+        data = _read()
+        data["gbans"].pop(str(user_id), None)
+        _write(data)
 
 
 async def is_gbanned(user_id: int) -> bool:
-    doc = await gban_col.find_one({"user_id": user_id})
-    return doc is not None
+    async with _lock:
+        return str(user_id) in _read()["gbans"]
 
 
 async def get_gban_list() -> list[dict]:
-    cursor = gban_col.find({})
-    return [doc async for doc in cursor]
+    async with _lock:
+        data = _read()
+        return [{"user_id": int(uid), "reason": reason} for uid, reason in data["gbans"].items()]
 
 
 # ===================== Chats the bot is active in =====================
 async def add_chat(chat_id: int, title: str = ""):
-    await chats_col.update_one(
-        {"chat_id": chat_id}, {"$set": {"chat_id": chat_id, "title": title}}, upsert=True
-    )
+    async with _lock:
+        data = _read()
+        data["chats"][str(chat_id)] = title
+        _write(data)
 
 
 async def remove_chat(chat_id: int):
-    await chats_col.delete_one({"chat_id": chat_id})
+    async with _lock:
+        data = _read()
+        data["chats"].pop(str(chat_id), None)
+        _write(data)
 
 
 async def get_all_chats() -> list[int]:
-    cursor = chats_col.find({})
-    return [doc["chat_id"] async for doc in cursor]
+    async with _lock:
+        return [int(cid) for cid in _read()["chats"].keys()]

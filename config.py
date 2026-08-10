@@ -15,9 +15,6 @@ ASSISTANT_SESSION = os.environ.get("ASSISTANT_SESSION", "")  # optional 2nd acco
 OWNER_ID = int(os.environ.get("OWNER_ID", 0))
 LOG_GROUP_ID = int(os.environ.get("LOG_GROUP_ID", 0)) if os.environ.get("LOG_GROUP_ID") else None
 
-# ===================== Database =====================
-MONGO_DB_URL = os.environ.get("MONGO_DB_URL", "")
-
 # ===================== BabyAPI (song/video stream source) =====================
 BASE_URL = os.environ.get("BASE_URL", "https://api.babiesiq.tech")
 API_KEY = os.environ.get("API_KEY", "")

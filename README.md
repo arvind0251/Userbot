@@ -11,7 +11,8 @@ the stream source.
 - **Owner/Sudo system**: `.addsudo`, `.delsudo`, `.sudolist` — gate all sensitive commands.
 - **PM Guard**: warns and eventually blocks strangers who spam the userbot's PMs.
 - **Global moderation**: `.gban`, `.ungban`, `.gbanlist`, `.gmute`, `.gunmute` — acts across
-  every chat the account is in and stores state in MongoDB, so it persists restarts.
+  every chat the account is in and stores state in a local `storage.json` file, so it
+  persists restarts (no external database needed).
 - **Chat tools**: `.del`, `.purge`.
 - **Utility**: `.ping`, `.alive`, `.id`, `.help`.
 
@@ -35,7 +36,6 @@ python3 main.py
 | `API_ID` / `API_HASH` | https://my.telegram.org |
 | `STRING_SESSION` | Generate with Kurigram (`Client(...).export_session_string()`) for the account you want the userbot to run as |
 | `OWNER_ID` | Your numeric Telegram user ID (e.g. via @userinfobot) |
-| `MONGO_DB_URL` | MongoDB Atlas connection string |
 | `API_KEY` | Your BabyAPI key |
 
 ### Optional
@@ -55,7 +55,7 @@ PhoenixUB/
 │   ├── clients.py            Pyrogram clients (app / bot / assistant)
 │   └── call_manager.py       PyTgCalls instance + queue helpers
 ├── database/
-│   └── mongo.py               sudoers / gban / chats collections
+│   └── mongo.py               sudoers / gban / chats — local storage.json file
 └── modules/
     ├── owner/
     │   ├── sudoers.py         sudo add/del/list + @sudo_only decorator
