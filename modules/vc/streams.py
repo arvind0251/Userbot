@@ -33,7 +33,7 @@ def _baby_fetch_sync(vidid: str, want_video: bool) -> str:
     resp = requests.get(url, params=params, timeout=30)
     resp.raise_for_status()
     data = resp.json()
-    stream_url = data.get("url") or data.get("stream_url") or data.get("link")
+    stream_url = data.get("stream") or data.get("url") or data.get("stream_url") or data.get("link")
     if not stream_url:
         raise ValueError(f"[BabyAPI] No stream url in response: {data}")
     return stream_url
