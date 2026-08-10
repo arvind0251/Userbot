@@ -46,7 +46,12 @@ async def play_cmd(client, message: Message):
         await play_track(chat_id, result["stream_url"], video=is_video)
     except Exception as e:
         CURRENT.pop(chat_id, None)
-        await status.edit_text(f"❌ Failed to start stream: `{e}`")
+        err_text = str(e) or type(e).__name__
+        await status.edit_text(
+            f"❌ Failed to start stream: `{err_text}`\n"
+            f"(Tip: agar bot abhi start hua hai, thoda wait karke phir try karo — "
+            f"Telegram naye session ko throttle karta hai.)"
+        )
         return
 
     kind = "🎬 Video" if is_video else "🎵 Audio"
