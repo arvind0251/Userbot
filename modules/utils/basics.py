@@ -48,7 +48,8 @@ HELP_TEXT = """
 .clone <bot_token> / .unclone <bot_token> / .clonelist
 
 <b>🔑 Self-Service (PM only, anyone)</b>
-.login <string_session> / .logout / .mylogin
+.login — guided phone number + OTP login (or `.login <session_string>` to paste one directly)
+.cancellogin / .logout / .mylogin
 
 <b>🌐 Global Moderation</b>
 .gban / .ungban / .gbanlist
