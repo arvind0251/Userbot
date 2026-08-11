@@ -10,6 +10,8 @@ the stream source.
   `.stop`, `.mute`, `.unmute` — with a per-chat queue.
 - **Owner/Sudo system**: `.addsudo`, `.delsudo`, `.sudolist` — gate all sensitive commands.
 - **PM Guard**: warns and eventually blocks strangers who spam the userbot's PMs.
+  `.approve` / `.unapprove` / `.approved` let sudo users exempt specific people from
+  these warnings entirely.
 - **Global moderation**: `.gban`, `.ungban`, `.gbanlist`, `.gmute`, `.gunmute` — acts across
   every chat the account is in and stores state in a local `storage.json` file, so it
   persists restarts (no external database needed).

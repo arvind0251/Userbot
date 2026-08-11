@@ -45,6 +45,7 @@ HELP_TEXT = """
 
 <b>👑 Owner Commands</b>
 .addsudo / .delsudo / .sudolist
+.approve / .unapprove / .approved — exempt someone from PM Guard warnings
 .clone <bot_token> / .unclone <bot_token> / .clonelist
 
 <b>🔑 Self-Service (PM only, anyone)</b>

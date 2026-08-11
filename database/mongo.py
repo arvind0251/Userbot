@@ -129,3 +129,26 @@ async def reset_warns(chat_id: int, user_id: int):
         data.setdefault("warns", {})
         data["warns"].pop(_warn_key(chat_id, user_id), None)
         _write(data)
+
+
+# ===================== PM Guard approved users =====================
+async def approve_pm(user_id: int):
+    async with _lock:
+        data = _read()
+        data.setdefault("approved_pm", [])
+        if user_id not in data["approved_pm"]:
+            data["approved_pm"].append(user_id)
+        _write(data)
+
+
+async def unapprove_pm(user_id: int):
+    async with _lock:
+        data = _read()
+        data.setdefault("approved_pm", [])
+        data["approved_pm"] = [u for u in data["approved_pm"] if u != user_id]
+        _write(data)
+
+
+async def get_approved_pm() -> list[int]:
+    async with _lock:
+        return list(_read().get("approved_pm", []))
