@@ -15,7 +15,10 @@ MODULES = [
     "modules.global_mod.gban",
     "modules.global_mod.gmute",
     "modules.global_mod.gdel",
+    "modules.global_mod.warn",
+    "modules.global_mod.broadcast",
     "modules.utils.basics",
+    "modules.utils.info",
 ]
 for m in MODULES:
     importlib.import_module(m)

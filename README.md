@@ -13,6 +13,12 @@ the stream source.
 - **Global moderation**: `.gban`, `.ungban`, `.gbanlist`, `.gmute`, `.gunmute` — acts across
   every chat the account is in and stores state in a local `storage.json` file, so it
   persists restarts (no external database needed).
+- **Warn system**: `.warn`, `.unwarn`, `.warns`, `.resetwarns` — auto-bans a user after 3
+  warns in the same chat (configurable via `MAX_WARNS` in `modules/global_mod/warn.py`).
+- **Broadcast**: `.broadcast <text>` (or reply to any message with `.broadcast`) sends it
+  to every chat the account is currently in.
+- **Info**: `.info` — shows a user's ID, username, DC ID, premium status, chat role, and
+  warn count.
 - **Chat tools**: `.del`, `.purge`.
 - **Utility**: `.ping`, `.alive`, `.id`, `.help`.
 
@@ -67,9 +73,12 @@ PhoenixUB/
     ├── global_mod/
     │   ├── gban.py
     │   ├── gmute.py
-    │   └── gdel.py             .del/.purge
+    │   ├── gdel.py             .del/.purge
+    │   ├── warn.py             .warn/.unwarn/.warns/.resetwarns
+    │   └── broadcast.py         .broadcast
     └── utils/
-        └── basics.py           .ping/.alive/.id/.help
+        ├── basics.py           .ping/.alive/.id/.help
+        └── info.py             .info
 ```
 
 ## Important: Kurigram, not original Pyrogram

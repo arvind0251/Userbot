@@ -50,12 +50,18 @@ HELP_TEXT = """
 .gban / .ungban / .gbanlist
 .gmute / .gunmute
 
+<b>⚠️ Warn System</b>
+.warn / .unwarn / .warns / .resetwarns (auto-ban at 3 warns)
+
+<b>📢 Broadcast</b>
+.broadcast <text> — or reply to a message with .broadcast
+
 <b>🧹 Chat Tools</b>
 .del — delete replied message
 .purge — delete range of messages
 
 <b>⚙️ Utility</b>
-.ping / .alive / .id / .help
+.ping / .alive / .id / .info / .help
 """
 
 
