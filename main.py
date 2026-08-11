@@ -17,6 +17,8 @@ MODULES = [
     "modules.global_mod.gdel",
     "modules.global_mod.warn",
     "modules.global_mod.broadcast",
+    "modules.global_mod.chatmod",
+    "modules.owner.clone",
     "modules.utils.basics",
     "modules.utils.info",
 ]

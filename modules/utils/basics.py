@@ -41,14 +41,19 @@ HELP_TEXT = """
 <b>🎵 VC Commands</b>
 .play / .vply / .cplay / .cvply — play song/video (add v/c for video/channel)
 .pause / .resume / .skip / .stop
-.mute / .unmute
+.vmute / .vunmute — mute/unmute the VC stream
 
 <b>👑 Owner Commands</b>
 .addsudo / .delsudo / .sudolist
+.clone <bot_token> / .unclone <bot_token> / .clonelist
 
 <b>🌐 Global Moderation</b>
 .gban / .ungban / .gbanlist
-.gmute / .gunmute
+.gmute / .gunmute (across all chats)
+
+<b>👮 This-Chat Moderation</b>
+.ban / .unban / .kick / .mute / .unmute
+.banall / .kickall / .muteall / .unmuteall (non-admins only)
 
 <b>⚠️ Warn System</b>
 .warn / .unwarn / .warns / .resetwarns (auto-ban at 3 warns)

@@ -19,6 +19,12 @@ the stream source.
   to every chat the account is currently in.
 - **Info**: `.info` — shows a user's ID, username, DC ID, premium status, chat role, and
   warn count.
+- **This-chat moderation**: `.ban`, `.unban`, `.kick`, `.mute`, `.unmute` for single users,
+  plus `.banall`/`.kickall`/`.muteall`/`.unmuteall` for every non-admin in the current chat.
+- **Cloning**: `.clone <bot_token>` spins up a separate bot (from a token you get via
+  @BotFather) that reuses this account's VC engine for music commands — good for giving
+  someone their own branded bot without a second userbot login. `.unclone`/`.clonelist`
+  manage running clones.
 - **Chat tools**: `.del`, `.purge`.
 - **Utility**: `.ping`, `.alive`, `.id`, `.help`.
 

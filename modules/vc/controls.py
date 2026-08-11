@@ -29,18 +29,18 @@ async def resume_cmd(client, message: Message):
     await message.reply_text("▶️ Resumed.")
 
 
-@app.on_message(cmd("mute"))
+@app.on_message(cmd("vmute"))
 @sudo_only
 async def mute_cmd(client, message: Message):
     await mute_stream(message.chat.id)
-    await message.reply_text("🔇 Muted.")
+    await message.reply_text("🔇 VC muted.")
 
 
-@app.on_message(cmd("unmute"))
+@app.on_message(cmd("vunmute"))
 @sudo_only
 async def unmute_cmd(client, message: Message):
     await unmute_stream(message.chat.id)
-    await message.reply_text("🔊 Unmuted.")
+    await message.reply_text("🔊 VC unmuted.")
 
 
 @app.on_message(cmd("stop"))
