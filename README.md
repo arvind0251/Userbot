@@ -19,6 +19,12 @@ the stream source.
   warns in the same chat (configurable via `MAX_WARNS` in `modules/global_mod/warn.py`).
 - **Broadcast**: `.broadcast <text>` (or reply to any message with `.broadcast`) sends it
   to every chat the account is currently in.
+- **Shayari / Love broadcasts**: `.sha`/`.love` (reply to someone) send a single original
+  message tagging them. `.shastart [minutes]`/`.shastop` and `.lovestart [minutes]`/
+  `.lovestop` run a recurring broadcast in the chat (minimum 10-minute interval) that
+  tags a batch of members each time — meant for your own community, not for repeatedly
+  targeting one person. All lines are original, not copied from any song or published
+  poem, to stay clear of copyright.
 - **Info**: `.info` — shows a user's ID, username, DC ID, premium status, chat role, and
   warn count.
 - **This-chat moderation**: `.ban`, `.unban`, `.kick`, `.mute`, `.unmute` for single users,

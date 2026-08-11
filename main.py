@@ -19,6 +19,7 @@ MODULES = [
     "modules.global_mod.broadcast",
     "modules.global_mod.chatmod",
     "modules.global_mod.tagall",
+    "modules.global_mod.shayari",
     "modules.owner.clone",
     "modules.public.login",
     "modules.public.start",
