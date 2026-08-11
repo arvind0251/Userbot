@@ -69,9 +69,8 @@ HELP_TEXT = f"""
 .broadcast <text> — or reply to a message with .broadcast
 
 <b>📜 Shayari / Love</b>
-.sha / .love — reply to someone for a one-off message
-.shastart [minutes] / .shastop — recurring shayari, tags everyone (min 10 min)
-.lovestart [minutes] / .lovestop — recurring love messages, tags everyone
+.sha — reply to tag one person; alone tags whole group; `.sha 20` starts recurring (every 20 min); `.sha stop` stops it
+.love — same modes as .sha, with love-themed lines
 
 <b>🧹 Chat Tools</b>
 .del — delete replied message
