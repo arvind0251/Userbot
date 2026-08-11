@@ -18,6 +18,7 @@ MODULES = [
     "modules.global_mod.warn",
     "modules.global_mod.broadcast",
     "modules.global_mod.chatmod",
+    "modules.global_mod.tagall",
     "modules.owner.clone",
     "modules.public.login",
     "modules.utils.basics",

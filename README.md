@@ -21,6 +21,9 @@ the stream source.
   warn count.
 - **This-chat moderation**: `.ban`, `.unban`, `.kick`, `.mute`, `.unmute` for single users,
   plus `.banall`/`.kickall`/`.muteall`/`.unmuteall` for every non-admin in the current chat.
+- **Tag all**: `.tagall [message]` — mentions every non-bot member in small batches (5 at
+  a time, with a short delay) to stay under Telegram's flood limits; `.tagme` mentions
+  just yourself.
 - **Cloning**: `.clone <bot_token>` (owner/sudo only) spins up a separate bot that reuses
   this account's VC engine for music commands — good for giving someone their own branded
   bot without a second userbot login. `.unclone`/`.clonelist` manage running clones.

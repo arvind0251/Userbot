@@ -58,6 +58,8 @@ HELP_TEXT = """
 <b>👮 This-Chat Moderation</b>
 .ban / .unban / .kick / .mute / .unmute
 .banall / .kickall / .muteall / .unmuteall (non-admins only)
+.tagall [message] — mention everyone in small batches
+.tagme — mention yourself
 
 <b>⚠️ Warn System</b>
 .warn / .unwarn / .warns / .resetwarns (auto-ban at 3 warns)
