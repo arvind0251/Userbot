@@ -48,7 +48,7 @@ HELP_TEXT = """
 .clone <bot_token> / .unclone <bot_token> / .clonelist
 
 <b>🔑 Self-Service (PM only, anyone)</b>
-.login <bot_token_or_session> / .logout / .mylogin
+.login <string_session> / .logout / .mylogin
 
 <b>🌐 Global Moderation</b>
 .gban / .ungban / .gbanlist

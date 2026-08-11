@@ -24,12 +24,12 @@ the stream source.
 - **Cloning**: `.clone <bot_token>` (owner/sudo only) spins up a separate bot that reuses
   this account's VC engine for music commands — good for giving someone their own branded
   bot without a second userbot login. `.unclone`/`.clonelist` manage running clones.
-- **Open self-service login**: `.login <bot_token_or_string_session>` — works for **anyone**,
-  PM-only for security. Auto-detects whether you gave a bot token or a Pyrogram string
-  session and starts a personal clone tied to your Telegram account, sharing this
-  server's VC engine. `.logout` / `.mylogin` manage your own login. One active login
-  per person; a session string here is equivalent to full account access, so this should
-  only be offered to people who trust whoever operates the server.
+- **Open self-service login**: `.login <string_session>` — works for **anyone**, PM-only
+  for security. Takes a Pyrogram string session (of the user's own account) and starts a
+  personal clone tied to it, sharing this server's VC engine. `.logout` / `.mylogin`
+  manage your own login. One active login per person; a session string is equivalent to
+  full account access, so this should only be offered to people who trust whoever
+  operates the server.
 - **Chat tools**: `.del`, `.purge`.
 - **Utility**: `.ping`, `.alive`, `.id`, `.help`.
 
