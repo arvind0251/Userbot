@@ -24,6 +24,9 @@ the stream source.
   or `.sha 20` / `.love 20` to start a recurring broadcast every 20 minutes (10-minute
   minimum), stopped with `.sha stop` / `.love stop`. 100 unique lines each, all original
   (not copied from any song or published poem) to stay clear of copyright.
+- **Casual `.bro`**: one-shot, manually-triggered casual/flirty text — sends directly in
+  DM, or in a group only when replying to someone (so it's always aimed at one specific
+  person you chose, never automated or looped).
 - **Info**: `.info` — shows a user's ID, username, DC ID, premium status, chat role, and
   warn count.
 - **This-chat moderation**: `.ban`, `.unban`, `.kick`, `.mute`, `.unmute` for single users,
