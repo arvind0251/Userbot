@@ -60,6 +60,7 @@ HELP_TEXT = f"""
 .ban / .unban / .kick / .mute / .unmute
 .banall / .kickall / .muteall / .unmuteall (non-admins only)
 .tagall [message] — mention everyone in small batches
+.tagallstop — stop a tagall that's in progress
 .tagme — mention yourself
 
 <b>⚠️ Warn System</b>
