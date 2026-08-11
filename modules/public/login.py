@@ -18,7 +18,14 @@ from pyrogram.errors import (
     PhoneNumberInvalid, PasswordHashInvalid, FloodWait, RPCError,
 )
 
-from core.clients import app
+from core.clients import bot
+
+if bot is None:
+    raise RuntimeError(
+        "modules.public.login requires BOT_TOKEN to be set in .env — "
+        "the self-service login/clone flow runs through the bot account, "
+        "not the userbot, so it needs a bot token configured."
+    )
 from core.clone_handlers import register_common_handlers
 from config import API_ID, API_HASH
 
@@ -79,7 +86,7 @@ async def _finalize_login(user_id: int, temp_client: Client, message: Message):
         LOGIN_STATES.pop(user_id, None)
 
 
-@app.on_message(filters.command("login", prefixes=PREFIXES))
+@bot.on_message(filters.command("login", prefixes=PREFIXES))
 async def login_cmd(client, message: Message):
     if message.chat.type.name != "PRIVATE":
         await message.reply_text(
@@ -138,7 +145,7 @@ async def login_cmd(client, message: Message):
     )
 
 
-@app.on_message(filters.command("cancellogin", prefixes=PREFIXES) & filters.private)
+@bot.on_message(filters.command("cancellogin", prefixes=PREFIXES) & filters.private)
 async def cancellogin_cmd(client, message: Message):
     user_id = message.from_user.id
     if user_id not in LOGIN_STATES:
@@ -148,7 +155,7 @@ async def cancellogin_cmd(client, message: Message):
     await message.reply_text("❌ Login cancelled.")
 
 
-@app.on_message(filters.command("logout", prefixes=PREFIXES) & filters.private)
+@bot.on_message(filters.command("logout", prefixes=PREFIXES) & filters.private)
 async def logout_cmd(client, message: Message):
     user_id = message.from_user.id
     entry = USER_CLONES.pop(user_id, None)
@@ -162,7 +169,7 @@ async def logout_cmd(client, message: Message):
     await message.reply_text(f"✅ Logged out {entry['label']}.")
 
 
-@app.on_message(filters.command("mylogin", prefixes=PREFIXES) & filters.private)
+@bot.on_message(filters.command("mylogin", prefixes=PREFIXES) & filters.private)
 async def mylogin_cmd(client, message: Message):
     entry = USER_CLONES.get(message.from_user.id)
     if not entry:
@@ -175,7 +182,7 @@ async def mylogin_cmd(client, message: Message):
 # Runs in an early group so it gets first look at private messages, but
 # passes through (continue_propagation) if the user has no flow in progress,
 # so other private-chat handlers (like pmguard) still work normally.
-@app.on_message(filters.private & filters.text & filters.incoming, group=-10)
+@bot.on_message(filters.private & filters.text & filters.incoming, group=-10)
 async def login_flow_capture(client, message: Message):
     user_id = message.from_user.id
     state = LOGIN_STATES.get(user_id)

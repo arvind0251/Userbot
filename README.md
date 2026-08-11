@@ -29,8 +29,9 @@ the stream source.
 - **Cloning**: `.clone <bot_token>` (owner/sudo only) spins up a separate bot that reuses
   this account's VC engine for music commands — good for giving someone their own branded
   bot without a second userbot login. `.unclone`/`.clonelist` manage running clones.
-- **Open self-service login**: `.login` — works for **anyone**, PM-only for security.
-  Two ways to use it:
+- **Open self-service login**: `.login` — works for **anyone**, PM-only for security,
+  and runs through **the bot account (`BOT_TOKEN`), not the userbot** — so this flow
+  never touches the main personal account. Two ways to use it:
   - `.login` (no args) — guided flow: bot asks for your phone number, sends you a
     Telegram login code, you reply with the code (and 2FA password if you have one),
     and it logs you in automatically, then hands you the resulting session string.

@@ -3,7 +3,7 @@ from pyrogram import filters
 from pyrogram.types import Message
 
 from core.clients import app
-from config import BOT_NAME
+from config import BOT_NAME, BOT_USERNAME
 
 PREFIXES = [".", "!"]
 
@@ -37,7 +37,7 @@ async def id_cmd(client, message: Message):
     await message.reply_text(f"Chat ID: <code>{chat_id}</code>\nUser ID: <code>{user_id}</code>")
 
 
-HELP_TEXT = """
+HELP_TEXT = f"""
 <b>🎵 VC Commands</b>
 .play / .vply / .cplay / .cvply — play song/video (add v/c for video/channel)
 .pause / .resume / .skip / .stop
@@ -48,7 +48,7 @@ HELP_TEXT = """
 .approve / .unapprove / .approved — exempt someone from PM Guard warnings
 .clone <bot_token> / .unclone <bot_token> / .clonelist
 
-<b>🔑 Self-Service (PM only, anyone)</b>
+<b>🔑 Self-Service — PM the BOT ({'@' + BOT_USERNAME if BOT_USERNAME else 'the helper bot'}), not this account</b>
 .login — guided phone number + OTP login (or `.login <session_string>` to paste one directly)
 .cancellogin / .logout / .mylogin
 

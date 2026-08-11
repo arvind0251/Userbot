@@ -25,7 +25,10 @@ MODULES = [
     "modules.utils.info",
 ]
 for m in MODULES:
-    importlib.import_module(m)
+    try:
+        importlib.import_module(m)
+    except Exception as e:
+        print(f"[PhoenixUB] WARNING: could not load module '{m}': {type(e).__name__}: {e}")
 
 
 async def track_new_chats():
