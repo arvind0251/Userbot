@@ -6,39 +6,18 @@ identity, it just issues the same play/pause/etc commands, which operate on
 whatever chat_id they're called in via the shared `pytgcalls` instance.
 """
 from pyrogram import Client, filters
-from pyrogram.handlers import MessageHandler
 from pyrogram.types import Message
 from pyrogram.errors import RPCError
 
 from core.clients import app
+from core.clone_handlers import register_common_handlers
 from config import API_ID, API_HASH
 from modules.owner.sudoers import sudo_only
-
-from modules.utils.basics import ping_cmd, alive_cmd, id_cmd, help_cmd, cmd as u_cmd
-from modules.vc.play import play_cmd, cmd as vc_cmd
-from modules.vc.controls import (
-    pause_cmd, resume_cmd, mute_cmd, unmute_cmd, stop_cmd, skip_cmd, cmd as vcc_cmd,
-)
 
 PREFIXES = [".", "!"]
 
 # bot_token -> running Client
 CLONES: dict[str, Client] = {}
-
-
-def _register_clone_handlers(client: Client):
-    client.add_handler(MessageHandler(ping_cmd, u_cmd("ping")))
-    client.add_handler(MessageHandler(alive_cmd, u_cmd(["alive", "start"])))
-    client.add_handler(MessageHandler(id_cmd, u_cmd("id")))
-    client.add_handler(MessageHandler(help_cmd, u_cmd("help")))
-
-    client.add_handler(MessageHandler(play_cmd, vc_cmd(["play", "vply", "cplay", "cvply"])))
-    client.add_handler(MessageHandler(pause_cmd, vcc_cmd("pause")))
-    client.add_handler(MessageHandler(resume_cmd, vcc_cmd("resume")))
-    client.add_handler(MessageHandler(mute_cmd, vcc_cmd("vmute")))
-    client.add_handler(MessageHandler(unmute_cmd, vcc_cmd("vunmute")))
-    client.add_handler(MessageHandler(stop_cmd, vcc_cmd("stop")))
-    client.add_handler(MessageHandler(skip_cmd, vcc_cmd("skip")))
 
 
 @app.on_message(filters.command("clone", prefixes=PREFIXES))
@@ -67,7 +46,7 @@ async def clone_cmd(client, message: Message):
             bot_token=bot_token,
             in_memory=True,
         )
-        _register_clone_handlers(clone_client)
+        register_common_handlers(clone_client)
         await clone_client.start()
         CLONES[bot_token] = clone_client
         me = await clone_client.get_me()

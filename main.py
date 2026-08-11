@@ -19,6 +19,7 @@ MODULES = [
     "modules.global_mod.broadcast",
     "modules.global_mod.chatmod",
     "modules.owner.clone",
+    "modules.public.login",
     "modules.utils.basics",
     "modules.utils.info",
 ]
