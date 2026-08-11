@@ -21,6 +21,7 @@ MODULES = [
     "modules.global_mod.tagall",
     "modules.owner.clone",
     "modules.public.login",
+    "modules.public.start",
     "modules.utils.basics",
     "modules.utils.info",
 ]
