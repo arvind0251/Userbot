@@ -82,6 +82,9 @@ HELP_TEXT = f"""
 
 <b>⚙️ Utility</b>
 .ping / .alive / .id / .info / .help
+
+<b>🎨 Fun</b>
+.cat / .rose / .hacker / .error / .butterfly / .myson / .heart
 """
 
 

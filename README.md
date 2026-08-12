@@ -27,6 +27,9 @@ the stream source.
 - **Casual `.bro`**: one-shot, manually-triggered casual/flirty text — sends directly in
   DM, or in a group only when replying to someone (so it's always aimed at one specific
   person you chose, never automated or looped).
+- **Fun animations**: `.cat`, `.rose`, `.hacker`, `.error`, `.butterfly`, `.myson`,
+  `.heart` — cosmetic ASCII-art/emoji animations, open to anyone, no ties to
+  moderation or VC.
 - **Info**: `.info` — shows a user's ID, username, DC ID, premium status, chat role, and
   warn count.
 - **This-chat moderation**: `.ban`, `.unban`, `.kick`, `.mute`, `.unmute` for single users,

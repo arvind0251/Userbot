@@ -26,6 +26,7 @@ MODULES = [
     "modules.public.start",
     "modules.utils.basics",
     "modules.utils.info",
+    "modules.utils.fun",
 ]
 for m in MODULES:
     try:
