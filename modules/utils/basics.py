@@ -3,7 +3,6 @@ from pyrogram import filters
 from pyrogram.types import Message
 
 from core.clients import app
-from core.autodelete import auto_delete
 from config import BOT_NAME, BOT_USERNAME
 from modules.owner.sudoers import sudo_only
 
@@ -21,7 +20,6 @@ async def ping_cmd(client, message: Message):
     msg = await message.reply_text("🏓 Pinging...")
     ms = (time.time() - start) * 1000
     await msg.edit_text(f"🏓 Pong! `{ms:.2f}ms`")
-    auto_delete(msg)
 
 
 @app.on_message(cmd(["alive", "start"]))
@@ -31,7 +29,6 @@ async def alive_cmd(client, message: Message):
         f"✨ <b>{BOT_NAME}</b> is alive and running.\n"
         f"Use <code>.help</code> to see available commands."
     )
-    auto_delete(msg)
 
 
 @app.on_message(cmd("id"))
@@ -42,7 +39,6 @@ async def id_cmd(client, message: Message):
         message.from_user.id if message.from_user else "N/A"
     )
     msg = await message.reply_text(f"Chat ID: <code>{chat_id}</code>\nUser ID: <code>{user_id}</code>")
-    auto_delete(msg)
 
 
 HELP_TEXT = f"""
@@ -95,4 +91,3 @@ HELP_TEXT = f"""
 @sudo_only
 async def help_cmd(client, message: Message):
     msg = await message.reply_text(HELP_TEXT)
-    auto_delete(msg)

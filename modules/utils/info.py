@@ -3,7 +3,6 @@ from pyrogram.types import Message
 from pyrogram.enums import ChatMemberStatus
 
 from core.clients import app
-from core.autodelete import auto_delete
 from database.mongo import get_warns
 from modules.owner.sudoers import sudo_only
 
@@ -21,7 +20,6 @@ async def info_cmd(client, message: Message):
             user = await client.get_users(target)
         except Exception:
             msg = await message.reply_text("Couldn't find that user.")
-            auto_delete(msg)
             return
     else:
         user = message.from_user
@@ -51,4 +49,3 @@ async def info_cmd(client, message: Message):
         text += f"<b>Warns here:</b> {len(warns)}\n"
 
     msg = await message.reply_text(text)
-    auto_delete(msg)

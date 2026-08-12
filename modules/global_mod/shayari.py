@@ -21,7 +21,6 @@ from pyrogram.types import Message
 from pyrogram.errors import RPCError, FloodWait
 
 from core.clients import app
-from core.autodelete import auto_delete
 from modules.owner.sudoers import sudo_only
 
 PREFIXES = [".", "!"]
@@ -131,7 +130,6 @@ async def _send_to_whole_group_once(client, chat_id: int, lines: list[str]):
         text = f"{line}\n\n{_mention_text(batch)}" if batch else line
         try:
             sent = await client.send_message(chat_id, text)
-            auto_delete(sent)
         except FloodWait as e:
             await asyncio.sleep(e.value)
         except RPCError:
@@ -152,7 +150,6 @@ async def _recurring_loop(client, chat_id: int, lines: list[str], interval_secon
                 text = line
             try:
                 sent = await client.send_message(chat_id, text)
-                auto_delete(sent)
             except FloodWait as e:
                 await asyncio.sleep(e.value)
             except RPCError:
@@ -170,11 +167,9 @@ async def _handle(client, message: Message, lines: list[str], tasks: dict, label
         task = tasks.pop(chat_id, None)
         if not task:
             msg = await message.reply_text(f"No recurring {label} broadcast running here.")
-            auto_delete(msg)
             return
         task.cancel()
         msg = await message.reply_text(f"🛑 Recurring {label} broadcast stopped.")
-        auto_delete(msg)
         return
 
     # `.sha 20` / `.love 20` -> start recurring
@@ -190,7 +185,6 @@ async def _handle(client, message: Message, lines: list[str], tasks: dict, label
                     f"Recurring {label} broadcast already running here. "
                     f"Use `.{'sha' if label == 'shayari' else 'love'} stop` first."
                 )
-                auto_delete(msg)
                 return
             task = asyncio.create_task(_recurring_loop(client, chat_id, lines, minutes * 60))
             tasks[chat_id] = task
@@ -198,7 +192,6 @@ async def _handle(client, message: Message, lines: list[str], tasks: dict, label
                 f"📜 Recurring {label} broadcast started — every {minutes} min. "
                 f"Use `.{'sha' if label == 'shayari' else 'love'} stop` to stop."
             )
-            auto_delete(msg)
             return
 
     # Reply to someone -> one-shot, just them
@@ -207,7 +200,6 @@ async def _handle(client, message: Message, lines: list[str], tasks: dict, label
         line = random.choice(lines)
         text = f'{line}\n\n<a href="tg://user?id={u.id}">{u.first_name}</a>'
         msg = await message.reply_text(text)
-        auto_delete(msg)
         return
 
     # No reply, no args -> one-shot, whole group

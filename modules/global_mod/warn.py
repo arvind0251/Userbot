@@ -3,7 +3,6 @@ from pyrogram.types import Message
 from pyrogram.errors import RPCError
 
 from core.clients import app
-from core.autodelete import auto_delete
 from database.mongo import add_warn, get_warns, reset_warns
 from modules.owner.sudoers import sudo_only
 
@@ -32,7 +31,6 @@ async def warn_cmd(client, message: Message):
     target, name = _target_from(message)
     if not target:
         msg = await message.reply_text("Reply to a user or give their ID: `.warn <id> [reason]`")
-        auto_delete(msg)
         return
 
     if message.reply_to_message:
@@ -49,19 +47,16 @@ async def warn_cmd(client, message: Message):
             msg = await message.reply_text(
                 f"🚫 <b>{name}</b> reached {MAX_WARNS} warns and has been banned."
             )
-            auto_delete(msg)
         except RPCError as e:
             msg = await message.reply_text(
                 f"⚠️ {name} hit {MAX_WARNS} warns but I couldn't ban them: `{e}`\n"
                 f"(Am I admin here with ban rights?)"
             )
-            auto_delete(msg)
         return
 
     msg = await message.reply_text(
         f"⚠️ Warned <b>{name}</b> ({count}/{MAX_WARNS})\nReason: {reason}"
     )
-    auto_delete(msg)
 
 
 @app.on_message(cmd("unwarn"))
@@ -70,13 +65,11 @@ async def unwarn_cmd(client, message: Message):
     target, name = _target_from(message)
     if not target:
         msg = await message.reply_text("Reply to a user or give their ID: `.unwarn <id>`")
-        auto_delete(msg)
         return
 
     warns = await get_warns(message.chat.id, target)
     if not warns:
         msg = await message.reply_text(f"{name} has no warns.")
-        auto_delete(msg)
         return
 
     # remove just the most recent warn
@@ -86,7 +79,6 @@ async def unwarn_cmd(client, message: Message):
         await add_warn(message.chat.id, target, r)
 
     msg = await message.reply_text(f"✅ Removed one warn from <b>{name}</b> ({len(warns)}/{MAX_WARNS})")
-    auto_delete(msg)
 
 
 @app.on_message(cmd("warns"))
@@ -100,14 +92,12 @@ async def warns_cmd(client, message: Message):
     warns = await get_warns(message.chat.id, target)
     if not warns:
         msg = await message.reply_text(f"<b>{name}</b> has no warns in this chat.")
-        auto_delete(msg)
         return
 
     text = f"⚠️ <b>{name}</b> — {len(warns)}/{MAX_WARNS} warns\n\n"
     for i, r in enumerate(warns, 1):
         text += f"{i}. {r}\n"
     msg = await message.reply_text(text)
-    auto_delete(msg)
 
 
 @app.on_message(cmd("resetwarns"))
@@ -116,8 +106,6 @@ async def resetwarns_cmd(client, message: Message):
     target, name = _target_from(message)
     if not target:
         msg = await message.reply_text("Reply to a user or give their ID: `.resetwarns <id>`")
-        auto_delete(msg)
         return
     await reset_warns(message.chat.id, target)
     msg = await message.reply_text(f"✅ Cleared all warns for <b>{name}</b>.")
-    auto_delete(msg)

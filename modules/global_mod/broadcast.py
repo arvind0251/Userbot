@@ -4,7 +4,6 @@ from pyrogram.types import Message
 from pyrogram.errors import RPCError, FloodWait
 
 from core.clients import app
-from core.autodelete import auto_delete
 from database.mongo import get_all_chats
 from modules.owner.sudoers import sudo_only
 
@@ -23,14 +22,12 @@ async def broadcast_cmd(client, message: Message):
         msg = await message.reply_text(
             "Usage: `.broadcast <text>` or reply to a message with `.broadcast`"
         )
-        auto_delete(msg)
         return
 
     chats = await get_all_chats()
     if not chats:
         msg = await message.reply_text("No known chats yet — the bot needs to see at least one "
                                         "message in a group before it's tracked.")
-        auto_delete(msg)
         return
 
     status = await message.reply_text(f"📢 Broadcasting to {len(chats)} chat(s)...")
@@ -59,4 +56,3 @@ async def broadcast_cmd(client, message: Message):
             failed += 1
 
     await status.edit_text(f"📢 Broadcast done — sent to {sent}, failed in {failed}.")
-    auto_delete(status)

@@ -8,7 +8,6 @@ from pyrogram.types import Message
 from pyrogram.errors import RPCError
 
 from core.clients import app
-from core.autodelete import auto_delete
 from core.clone_handlers import register_common_handlers
 from config import API_ID, API_HASH
 from modules.owner.sudoers import sudo_only
@@ -28,13 +27,11 @@ async def clone_cmd(client, message: Message):
             "Get a token from @BotFather. Run this in PM, not a group — "
             "the token is sensitive."
         )
-        auto_delete(msg)
         return
 
     bot_token = message.command[1]
     if bot_token in CLONES:
         msg = await message.reply_text("This bot token is already running as a clone.")
-        auto_delete(msg)
         return
 
     status = await message.reply_text("🔄 Starting clone...")
@@ -60,7 +57,6 @@ async def clone_cmd(client, message: Message):
         await status.edit_text(f"❌ Failed to start clone: `{e}`")
     except Exception as e:
         await status.edit_text(f"❌ Failed to start clone: `{type(e).__name__}: {e}`")
-    auto_delete(status)
 
 
 @app.on_message(filters.command("unclone", prefixes=PREFIXES))
@@ -68,17 +64,14 @@ async def clone_cmd(client, message: Message):
 async def unclone_cmd(client, message: Message):
     if len(message.command) < 2:
         msg = await message.reply_text("Usage: `.unclone <bot_token>`")
-        auto_delete(msg)
         return
     bot_token = message.command[1]
     clone_client = CLONES.pop(bot_token, None)
     if not clone_client:
         msg = await message.reply_text("No running clone with that token.")
-        auto_delete(msg)
         return
     await clone_client.stop()
     msg = await message.reply_text("✅ Clone stopped.")
-    auto_delete(msg)
 
 
 @app.on_message(filters.command("clonelist", prefixes=PREFIXES))
@@ -86,7 +79,6 @@ async def unclone_cmd(client, message: Message):
 async def clonelist_cmd(client, message: Message):
     if not CLONES:
         msg = await message.reply_text("No clones running.")
-        auto_delete(msg)
         return
     lines = []
     for token, c in CLONES.items():
@@ -96,4 +88,3 @@ async def clonelist_cmd(client, message: Message):
         except Exception:
             lines.append(f"• (token ending ...{token[-6:]})")
     msg = await message.reply_text("🤖 <b>Running Clones</b>\n\n" + "\n".join(lines))
-    auto_delete(msg)

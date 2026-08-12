@@ -2,7 +2,6 @@ from pyrogram import filters
 from pyrogram.types import Message
 
 from core.clients import app
-from core.autodelete import auto_delete
 from config import OWNER_ID
 from modules.owner.sudoers import SUDO_USERS, sudo_only
 from database.mongo import approve_pm, unapprove_pm, get_approved_pm
@@ -67,7 +66,6 @@ async def approve_cmd(client, message: Message):
     target, name = _target_from(message)
     if not target:
         msg = await message.reply_text("Reply to a user or give their ID: `.approve <id>`")
-        auto_delete(msg)
         return
     await approve_pm(target)
     PM_WARNS.pop(target, None)
@@ -76,7 +74,6 @@ async def approve_cmd(client, message: Message):
     except Exception:
         pass
     msg = await message.reply_text(f"✅ <b>{name}</b> can now PM this account freely, no warnings.")
-    auto_delete(msg)
 
 
 @app.on_message(filters.command("unapprove", prefixes=PREFIXES))
@@ -85,11 +82,9 @@ async def unapprove_cmd(client, message: Message):
     target, name = _target_from(message)
     if not target:
         msg = await message.reply_text("Reply to a user or give their ID: `.unapprove <id>`")
-        auto_delete(msg)
         return
     await unapprove_pm(target)
     msg = await message.reply_text(f"✅ Removed <b>{name}</b> from the PM-approved list.")
-    auto_delete(msg)
 
 
 @app.on_message(filters.command("approved", prefixes=PREFIXES))
@@ -98,8 +93,6 @@ async def approved_cmd(client, message: Message):
     approved = await get_approved_pm()
     if not approved:
         msg = await message.reply_text("No approved PM users yet.")
-        auto_delete(msg)
         return
     text = "✅ <b>PM-Approved Users</b>\n\n" + "\n".join(f"• <code>{uid}</code>" for uid in approved)
     msg = await message.reply_text(text)
-    auto_delete(msg)

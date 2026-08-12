@@ -2,6 +2,7 @@ import asyncio
 import importlib
 
 from core.clients import app, bot
+from core.autodelete import register_trigger_autodelete
 from database.mongo import add_chat
 from modules.owner.sudoers import load_sudoers
 
@@ -47,6 +48,7 @@ async def track_new_chats():
 async def main():
     await load_sudoers()
     await track_new_chats()
+    register_trigger_autodelete(app)
 
     await app.start()
     print("[Bot] Userbot client started.")

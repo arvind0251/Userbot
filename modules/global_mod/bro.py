@@ -11,7 +11,6 @@ from pyrogram import filters
 from pyrogram.types import Message
 
 from core.clients import app
-from core.autodelete import auto_delete
 from modules.owner.sudoers import sudo_only
 
 PREFIXES = [".", "!"]
@@ -37,7 +36,6 @@ async def bro_cmd(client, message: Message):
 
     if message.chat.type.name == "PRIVATE":
         msg = await message.reply_text(line)
-        auto_delete(msg)
         return
 
     # Group: require a reply so it's clearly aimed at one specific person,
@@ -46,10 +44,8 @@ async def bro_cmd(client, message: Message):
         u = message.reply_to_message.from_user
         text = f'{line}\n\n<a href="tg://user?id={u.id}">{u.first_name}</a>'
         msg = await message.reply_text(text)
-        auto_delete(msg)
         return
 
     msg = await message.reply_text(
         "In a group, reply to someone's message with `.bro` to send it to them."
     )
-    auto_delete(msg)
