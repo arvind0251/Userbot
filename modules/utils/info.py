@@ -4,11 +4,13 @@ from pyrogram.enums import ChatMemberStatus
 
 from core.clients import app
 from database.mongo import get_warns
+from modules.owner.sudoers import sudo_only
 
 PREFIXES = [".", "!"]
 
 
 @app.on_message(filters.command("info", prefixes=PREFIXES))
+@sudo_only
 async def info_cmd(client, message: Message):
     if message.reply_to_message and message.reply_to_message.from_user:
         user = message.reply_to_message.from_user

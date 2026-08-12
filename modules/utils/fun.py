@@ -7,6 +7,7 @@ from pyrogram import filters
 from pyrogram.types import Message
 
 from core.clients import app
+from modules.owner.sudoers import sudo_only
 
 PREFIXES = [".", "!"]
 FRAME_DELAY = 0.6
@@ -154,12 +155,14 @@ async def _draw_art(status: Message, art: str, header: str = "", footer: str = "
 
 
 @app.on_message(cmd("cat"))
+@sudo_only
 async def cat_cmd(client, message: Message):
     status = await message.reply_text("🐈")
     await _animate(status, CAT_ANIMATION)
 
 
 @app.on_message(cmd("rose"))
+@sudo_only
 async def rose_cmd(client, message: Message):
     status = await message.reply_text("🌱")
     await _animate(status, FLOWER_BLOOM)
@@ -167,6 +170,7 @@ async def rose_cmd(client, message: Message):
 
 
 @app.on_message(cmd("hacker"))
+@sudo_only
 async def hacker_cmd(client, message: Message):
     status = await message.reply_text("💻 <b>Hacking System...</b>")
     await asyncio.sleep(FRAME_DELAY)
@@ -174,6 +178,7 @@ async def hacker_cmd(client, message: Message):
 
 
 @app.on_message(cmd("error"))
+@sudo_only
 async def error_cmd(client, message: Message):
     status = await message.reply_text("⚠️ <b>SYSTEM CRASHING...</b>")
     await asyncio.sleep(FRAME_DELAY)
@@ -181,6 +186,7 @@ async def error_cmd(client, message: Message):
 
 
 @app.on_message(cmd("butterfly"))
+@sudo_only
 async def butterfly_cmd(client, message: Message):
     status = await message.reply_text("🦋 <b>Drawing...</b>")
     await asyncio.sleep(FRAME_DELAY)
@@ -188,6 +194,7 @@ async def butterfly_cmd(client, message: Message):
 
 
 @app.on_message(cmd("myson"))
+@sudo_only
 async def myson_cmd(client, message: Message):
     status = await message.reply_text("🐰 <b>Summoning...</b>")
     await asyncio.sleep(FRAME_DELAY)
@@ -195,6 +202,7 @@ async def myson_cmd(client, message: Message):
 
 
 @app.on_message(cmd("heart"))
+@sudo_only
 async def heart_cmd(client, message: Message):
     status = await message.reply_text("❤️")
     await _animate(status, HEART_FRAMES)

@@ -90,6 +90,7 @@ async def tagallstop_cmd(client, message: Message):
 
 
 @app.on_message(cmd("tagme"))
+@sudo_only
 async def tagme_cmd(client, message: Message):
     """Simple opt-in style tag: mentions just the person who ran the command."""
     user = message.from_user

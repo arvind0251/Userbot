@@ -17,8 +17,7 @@ if bot is None:
 START_TEXT = f"""
 👋 Hi! I'm <b>{BOT_NAME}</b>'s companion bot.
 
-I let you run your own music-playing account here, powered by this
-server's voice-chat engine — no separate hosting needed.
+I let you run your own account/bot here, linked to this server.
 
 <b>To get started:</b>
 Send <code>.login</code> right here in this chat, and I'll walk you

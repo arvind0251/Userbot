@@ -6,8 +6,7 @@ Two ways to self-login (OPEN to any user, no sudo needed, PM-only for safety):
      number, sends you a Telegram login code, you reply with the code (+ 2FA
      password if you have one), and the bot logs you in automatically.
 
-Either way, a separate Client is started for that user, sharing this server's
-VC engine (PyTgCalls instance) for music playback. One active login per user;
+Either way, a separate Client is started for that user. One active login per user;
 starting a new one replaces the old one.
 """
 import asyncio
@@ -76,8 +75,7 @@ async def _finalize_login(user_id: int, temp_client: Client, message: Message):
 
         await message.reply_text(
             f"✅ Logged in as: <b>{label}</b>\n\n"
-            f"VC commands (.play etc) issued from this login share this "
-            f"server's voice-chat engine. Use `.logout` to stop it.\n\n"
+            f"Use `.logout` to stop it.\n\n"
             f"Your session string (save it somewhere safe, then consider "
             f"deleting this message — anyone with this string has full "
             f"access to your account):\n\n<code>{session_string}</code>"

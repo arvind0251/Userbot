@@ -65,6 +65,7 @@ async def delsudo_cmd(client, message: Message):
 
 
 @app.on_message(filters.command("sudolist", prefixes=[".", "!"]))
+@sudo_only
 async def sudolist_cmd(client, message: Message):
     text = "👑 <b>Sudo Users</b>\n\n" + "\n".join(f"• <code>{uid}</code>" for uid in SUDO_USERS)
     await message.reply_text(text)

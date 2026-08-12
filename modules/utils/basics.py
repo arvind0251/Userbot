@@ -4,6 +4,7 @@ from pyrogram.types import Message
 
 from core.clients import app
 from config import BOT_NAME, BOT_USERNAME
+from modules.owner.sudoers import sudo_only
 
 PREFIXES = [".", "!"]
 
@@ -13,6 +14,7 @@ def cmd(name):
 
 
 @app.on_message(cmd("ping"))
+@sudo_only
 async def ping_cmd(client, message: Message):
     start = time.time()
     msg = await message.reply_text("🏓 Pinging...")
@@ -21,6 +23,7 @@ async def ping_cmd(client, message: Message):
 
 
 @app.on_message(cmd(["alive", "start"]))
+@sudo_only
 async def alive_cmd(client, message: Message):
     await message.reply_text(
         f"✨ <b>{BOT_NAME}</b> is alive and running.\n"
@@ -29,6 +32,7 @@ async def alive_cmd(client, message: Message):
 
 
 @app.on_message(cmd("id"))
+@sudo_only
 async def id_cmd(client, message: Message):
     chat_id = message.chat.id
     user_id = message.reply_to_message.from_user.id if message.reply_to_message else (
@@ -38,11 +42,6 @@ async def id_cmd(client, message: Message):
 
 
 HELP_TEXT = f"""
-<b>🎵 VC Commands</b>
-.play / .vply / .cplay / .cvply — play song/video (add v/c for video/channel)
-.pause / .resume / .skip / .stop
-.vmute / .vunmute — mute/unmute the VC stream
-
 <b>👑 Owner Commands</b>
 .addsudo / .delsudo / .sudolist
 .approve / .unapprove / .approved — exempt someone from PM Guard warnings
@@ -89,5 +88,6 @@ HELP_TEXT = f"""
 
 
 @app.on_message(cmd("help"))
+@sudo_only
 async def help_cmd(client, message: Message):
     await message.reply_text(HELP_TEXT)

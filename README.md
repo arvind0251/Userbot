@@ -1,13 +1,12 @@
 # PhoenixUB
 
-Fresh, from-scratch Telegram userbot — VC music/video streaming (latest PyTgCalls v2 /
-NTgCalls), owner/sudo system, global moderation, and utility commands. Uses BabyAPI as
-the stream source.
+Telegram userbot — moderation, self-service account cloning, and fun extras.
+All commands are restricted to the owner and sudo users, except the
+self-service `.login`/`.clone` flow, which is intentionally open to anyone
+(PM-only, for safety).
 
 ## Features
 
-- **VC Music/Video**: `.play`, `.vply`, `.cplay`, `.cvply`, `.pause`, `.resume`, `.skip`,
-  `.stop`, `.mute`, `.unmute` — with a per-chat queue.
 - **Owner/Sudo system**: `.addsudo`, `.delsudo`, `.sudolist` — gate all sensitive commands.
 - **PM Guard**: warns and eventually blocks strangers who spam the userbot's PMs.
   `.approve` / `.unapprove` / `.approved` let sudo users exempt specific people from
@@ -15,10 +14,16 @@ the stream source.
 - **Global moderation**: `.gban`, `.ungban`, `.gbanlist`, `.gmute`, `.gunmute` — acts across
   every chat the account is in and stores state in a local `storage.json` file, so it
   persists restarts (no external database needed).
+- **This-chat moderation**: `.ban`, `.unban`, `.kick`, `.mute`, `.unmute` for single users,
+  plus `.banall`/`.kickall`/`.muteall`/`.unmuteall` for every non-admin in the current chat.
 - **Warn system**: `.warn`, `.unwarn`, `.warns`, `.resetwarns` — auto-bans a user after 3
   warns in the same chat (configurable via `MAX_WARNS` in `modules/global_mod/warn.py`).
 - **Broadcast**: `.broadcast <text>` (or reply to any message with `.broadcast`) sends it
   to every chat the account is currently in.
+- **Tag all**: `.tagall [message]` — mentions every non-bot member in small batches (5 at
+  a time, with a short delay) to stay under Telegram's flood limits; `.tagallstop`
+  interrupts it partway through (handy for large groups where it takes a while); `.tagme`
+  mentions just yourself.
 - **Shayari / Love**: `.sha` and `.love` each work three ways — reply to someone for a
   one-off message tagging just them; use with no reply to tag the whole group once;
   or `.sha 20` / `.love 20` to start a recurring broadcast every 20 minutes (10-minute
@@ -28,19 +33,10 @@ the stream source.
   DM, or in a group only when replying to someone (so it's always aimed at one specific
   person you chose, never automated or looped).
 - **Fun animations**: `.cat`, `.rose`, `.hacker`, `.error`, `.butterfly`, `.myson`,
-  `.heart` — cosmetic ASCII-art/emoji animations, open to anyone, no ties to
-  moderation or VC.
-- **Info**: `.info` — shows a user's ID, username, DC ID, premium status, chat role, and
-  warn count.
-- **This-chat moderation**: `.ban`, `.unban`, `.kick`, `.mute`, `.unmute` for single users,
-  plus `.banall`/`.kickall`/`.muteall`/`.unmuteall` for every non-admin in the current chat.
-- **Tag all**: `.tagall [message]` — mentions every non-bot member in small batches (5 at
-  a time, with a short delay) to stay under Telegram's flood limits; `.tagallstop`
-  interrupts it partway through (handy for large groups where it takes a while); `.tagme`
-  mentions just yourself.
+  `.heart` — cosmetic ASCII-art/emoji animations.
 - **Cloning**: `.clone <bot_token>` (owner/sudo only) spins up a separate bot that reuses
-  this account's VC engine for music commands — good for giving someone their own branded
-  bot without a second userbot login. `.unclone`/`.clonelist` manage running clones.
+  this account's basic utility commands (ping/alive/id/help).
+  `.unclone`/`.clonelist` manage running clones.
 - **Open self-service login**: `.login` — works for **anyone**, PM-only for security,
   and runs through **the bot account (`BOT_TOKEN`), not the userbot** — so this flow
   never touches the main personal account. Two ways to use it:
@@ -49,23 +45,18 @@ the stream source.
     and it logs you in automatically, then hands you the resulting session string.
   - `.login <string_session>` — paste an existing session string directly, if you
     already generated one yourself.
-  Either way it starts a personal clone tied to your account, sharing this server's VC
-  engine. `.logout` / `.mylogin` / `.cancellogin` manage your own login. One active login
+  `.logout` / `.mylogin` / `.cancellogin` manage your own login. One active login
   per person; the resulting session string is equivalent to full account access, so this
   should only be offered to people who trust whoever operates the server.
-- **Chat tools**: `.del`, `.purge`.
-- **Utility**: `.ping`, `.alive`, `.id`, `.help`.
-
-Note: mass-messaging / chat-flooding ("raid") plugins were intentionally left out.
 
 ## Setup
 
 ```bash
-git clone <this-repo-once-you-push-it>
+git clone <this-repo>
 cd PhoenixUB
 cp .env.example .env
 nano .env          # fill in real values (see below)
-pip install -r requirements.txt --break-system-packages
+pip install -r requirements.txt
 python3 main.py
 ```
 
@@ -76,13 +67,11 @@ python3 main.py
 | `API_ID` / `API_HASH` | https://my.telegram.org |
 | `STRING_SESSION` | Generate with Kurigram (`Client(...).export_session_string()`) for the account you want the userbot to run as |
 | `OWNER_ID` | Your numeric Telegram user ID (e.g. via @userinfobot) |
-| `API_KEY` | Your BabyAPI key |
 
 ### Optional
 
-- `BOT_TOKEN` — a helper bot client, if you want bot-side features later.
-- `ASSISTANT_SESSION` — a second account's session string, dedicated to joining VCs so
-  your main account isn't tied up in every call.
+- `BOT_TOKEN` — a helper bot account that runs the self-service `.login`/`.clone` flow.
+  Required if you want that feature at all.
 - `LOG_GROUP_ID` — a group/channel ID to send startup/error logs to.
 
 ## Project structure
@@ -92,45 +81,44 @@ PhoenixUB/
 ├── main.py                  entry point
 ├── config.py                env var loading
 ├── core/
-│   ├── clients.py            Pyrogram clients (app / bot / assistant)
-│   ├── call_manager.py       PyTgCalls instance + queue helpers
-│   └── clone_handlers.py     shared command-set for clone/login clients
+│   ├── clients.py             Pyrogram clients (app / bot)
+│   └── clone_handlers.py      shared open command-set for clone/login clients
 ├── database/
-│   └── mongo.py               sudoers / gban / chats — local storage.json file
+│   └── mongo.py               sudoers / gban / warns / chats / approved — local storage.json file
 └── modules/
     ├── owner/
     │   ├── sudoers.py         sudo add/del/list + @sudo_only decorator
-    │   ├── pmguard.py         PM spam warning/block
+    │   ├── pmguard.py         PM spam warning/block + approve system
     │   └── clone.py            .clone/.unclone/.clonelist (sudo-only)
     ├── public/
-    │   └── login.py            .login/.logout/.mylogin (open to everyone, PM-only)
-    ├── vc/
-    │   ├── streams.py         BabyAPI fetch logic
-    │   ├── play.py            .play/.vply/.cplay/.cvply
-    │   └── controls.py        .pause/.resume/.skip/.stop/.mute/.unmute
+    │   ├── login.py            .login/.logout/.mylogin (open to everyone, PM-only)
+    │   └── start.py            /start welcome message for the bot account
     ├── global_mod/
     │   ├── gban.py
     │   ├── gmute.py
     │   ├── gdel.py             .del/.purge
+    │   ├── chatmod.py          .ban/.kick/.mute (+all variants)
     │   ├── warn.py             .warn/.unwarn/.warns/.resetwarns
-    │   └── broadcast.py         .broadcast
+    │   ├── broadcast.py         .broadcast
+    │   ├── tagall.py            .tagall/.tagallstop/.tagme
+    │   ├── shayari.py           .sha/.love
+    │   └── bro.py               .bro
     └── utils/
         ├── basics.py           .ping/.alive/.id/.help
-        └── info.py             .info
+        ├── info.py             .info
+        └── fun.py               .cat/.rose/.hacker/.error/.butterfly/.myson/.heart
 ```
 
 ## Important: Kurigram, not original Pyrogram
 
-`py-tgcalls` v2.x needs error classes (like `GroupcallForbidden`) that the original,
-now largely unmaintained `pyrogram` package doesn't have. This project installs
-**Kurigram** instead — an actively maintained fork that's a drop-in replacement
-(same `import pyrogram` statements work unchanged). `requirements.txt` already
-points to `kurigram`, so a plain `pip install -r requirements.txt` handles this —
-just don't `pip install pyrogram` separately, or it will conflict.
+This project uses **Kurigram** — an actively maintained fork of Pyrogram that's a
+drop-in replacement (same `import pyrogram` statements work unchanged).
+`requirements.txt` already points to `kurigram`, so a plain `pip install -r
+requirements.txt` handles this — just don't `pip install pyrogram` separately, or it
+will conflict.
 
 ## Notes
 
 - Generating `STRING_SESSION` logs into a real personal Telegram account — never share
   this string with anyone, it's equivalent to your account password.
 - Never commit `.env` — it's already in `.gitignore`.
-- Rotate your BabyAPI key if it's ever been pasted anywhere public.

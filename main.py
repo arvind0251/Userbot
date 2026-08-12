@@ -1,8 +1,7 @@
 import asyncio
 import importlib
 
-from core.clients import app, bot, assistant
-from core.call_manager import pytgcalls
+from core.clients import app, bot
 from database.mongo import add_chat
 from modules.owner.sudoers import load_sudoers
 
@@ -10,8 +9,6 @@ from modules.owner.sudoers import load_sudoers
 MODULES = [
     "modules.owner.sudoers",
     "modules.owner.pmguard",
-    "modules.vc.play",
-    "modules.vc.controls",
     "modules.global_mod.gban",
     "modules.global_mod.gmute",
     "modules.global_mod.gdel",
@@ -58,23 +55,18 @@ async def main():
         await bot.start()
         print("[PhoenixUB] Bot client started.")
 
-    if assistant:
-        await assistant.start()
-        print("[PhoenixUB] Assistant client started.")
-
-    await pytgcalls.start()
-    print("[PhoenixUB] PyTgCalls started. Bot is ready.")
+    print("[PhoenixUB] Bot is ready.")
 
     await asyncio.Event().wait()  # run forever
 
 
 if __name__ == "__main__":
     # NOTE: We intentionally use get_event_loop() + run_until_complete() here
-    # instead of asyncio.run(). Pyrogram/PyTgCalls clients are created at
-    # import time (module level in core/clients.py, core/call_manager.py) and
-    # grab whatever event loop exists at that moment via get_event_loop().
-    # asyncio.run() always creates a brand-new loop, which would then differ
-    # from the one the clients already grabbed -> "attached to a different
-    # loop" RuntimeError. Using get_event_loop() here reuses that same loop.
+    # instead of asyncio.run(). Pyrogram clients are created at import time
+    # (module level in core/clients.py) and grab whatever event loop exists
+    # at that moment via get_event_loop(). asyncio.run() always creates a
+    # brand-new loop, which would then differ from the one the clients
+    # already grabbed -> "attached to a different loop" RuntimeError. Using
+    # get_event_loop() here reuses that same loop.
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main())

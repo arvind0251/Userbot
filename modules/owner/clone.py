@@ -1,9 +1,7 @@
 """
 .clone <bot_token> lets someone run their own branded bot that reuses this
-userbot's VC engine (PyTgCalls instance) and music/utility commands. The
-clone is a plain Pyrogram bot Client — it does NOT get its own voice-chat
-identity, it just issues the same play/pause/etc commands, which operate on
-whatever chat_id they're called in via the shared `pytgcalls` instance.
+userbot's basic utility commands (ping/alive/id/help). The clone is a plain
+Pyrogram bot Client, separate from the main account.
 """
 from pyrogram import Client, filters
 from pyrogram.types import Message
@@ -52,8 +50,8 @@ async def clone_cmd(client, message: Message):
         me = await clone_client.get_me()
         await status.edit_text(
             f"✅ Clone started: @{me.username}\n\n"
-            f"It shares this account's VC session — .play/.pause/etc issued to "
-            f"@{me.username} operate through this userbot's voice-chat engine."
+            f"It shares this account's basic utility commands. "
+            f"@{me.username} is now live."
         )
     except RPCError as e:
         await status.edit_text(f"❌ Failed to start clone: `{e}`")
