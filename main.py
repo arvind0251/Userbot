@@ -29,7 +29,7 @@ for m in MODULES:
     try:
         importlib.import_module(m)
     except Exception as e:
-        print(f"[PhoenixUB] WARNING: could not load module '{m}': {type(e).__name__}: {e}")
+        print(f"[Bot] WARNING: could not load module '{m}': {type(e).__name__}: {e}")
 
 
 async def track_new_chats():
@@ -49,13 +49,13 @@ async def main():
     await track_new_chats()
 
     await app.start()
-    print("[PhoenixUB] Userbot client started.")
+    print("[Bot] Userbot client started.")
 
     if bot:
         await bot.start()
-        print("[PhoenixUB] Bot client started.")
+        print("[Bot] Bot client started.")
 
-    print("[PhoenixUB] Bot is ready.")
+    print("[Bot] Bot is ready.")
 
     await asyncio.Event().wait()  # run forever
 

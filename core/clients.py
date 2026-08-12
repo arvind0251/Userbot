@@ -10,7 +10,7 @@ if not STRING_SESSION:
 
 # Main userbot client (personal account, drives all userbot commands)
 app = Client(
-    name="PhoenixUB-user",
+    name="userbot-session",
     api_id=API_ID,
     api_hash=API_HASH,
     session_string=STRING_SESSION,
@@ -23,7 +23,7 @@ app = Client(
 bot = None
 if BOT_TOKEN:
     bot = Client(
-        name="PhoenixUB-bot",
+        name="userbot-bot",
         api_id=API_ID,
         api_hash=API_HASH,
         bot_token=BOT_TOKEN,

@@ -1,4 +1,4 @@
-# PhoenixUB
+# Userbot
 
 Telegram userbot — moderation, self-service account cloning, and fun extras.
 All commands are restricted to the owner and sudo users, except the
@@ -53,7 +53,7 @@ self-service `.login`/`.clone` flow, which is intentionally open to anyone
 
 ```bash
 git clone <this-repo>
-cd PhoenixUB
+cd userbot
 cp .env.example .env
 nano .env          # fill in real values (see below)
 pip install -r requirements.txt
@@ -77,7 +77,7 @@ python3 main.py
 ## Project structure
 
 ```
-PhoenixUB/
+userbot/
 ├── main.py                  entry point
 ├── config.py                env var loading
 ├── core/
