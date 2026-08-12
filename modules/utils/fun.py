@@ -7,6 +7,7 @@ from pyrogram import filters
 from pyrogram.types import Message
 
 from core.clients import app
+from core.autodelete import auto_delete
 from modules.owner.sudoers import sudo_only
 
 PREFIXES = [".", "!"]
@@ -159,6 +160,7 @@ async def _draw_art(status: Message, art: str, header: str = "", footer: str = "
 async def cat_cmd(client, message: Message):
     status = await message.reply_text("🐈")
     await _animate(status, CAT_ANIMATION)
+    auto_delete(status)
 
 
 @app.on_message(cmd("rose"))
@@ -167,6 +169,7 @@ async def rose_cmd(client, message: Message):
     status = await message.reply_text("🌱")
     await _animate(status, FLOWER_BLOOM)
     await _draw_art(status, ROSE_ART, footer="🌹 <b>FOR YOU!</b>")
+    auto_delete(status)
 
 
 @app.on_message(cmd("hacker"))
@@ -175,6 +178,7 @@ async def hacker_cmd(client, message: Message):
     status = await message.reply_text("💻 <b>Hacking System...</b>")
     await asyncio.sleep(FRAME_DELAY)
     await _draw_art(status, HACKER_ART, footer="💻 <b>SYSTEM HACKED!</b>")
+    auto_delete(status)
 
 
 @app.on_message(cmd("error"))
@@ -183,6 +187,7 @@ async def error_cmd(client, message: Message):
     status = await message.reply_text("⚠️ <b>SYSTEM CRASHING...</b>")
     await asyncio.sleep(FRAME_DELAY)
     await _draw_art(status, ERROR_ART, footer="⚠️ <b>FATAL ERROR DETECTED!</b>")
+    auto_delete(status)
 
 
 @app.on_message(cmd("butterfly"))
@@ -191,6 +196,7 @@ async def butterfly_cmd(client, message: Message):
     status = await message.reply_text("🦋 <b>Drawing...</b>")
     await asyncio.sleep(FRAME_DELAY)
     await _draw_art(status, BUTTERFLY_ART, footer="🦋 <b>Fly High!</b>")
+    auto_delete(status)
 
 
 @app.on_message(cmd("myson"))
@@ -199,6 +205,7 @@ async def myson_cmd(client, message: Message):
     status = await message.reply_text("🐰 <b>Summoning...</b>")
     await asyncio.sleep(FRAME_DELAY)
     await _draw_art(status, MYSON_ART)
+    auto_delete(status)
 
 
 @app.on_message(cmd("heart"))
@@ -206,3 +213,4 @@ async def myson_cmd(client, message: Message):
 async def heart_cmd(client, message: Message):
     status = await message.reply_text("❤️")
     await _animate(status, HEART_FRAMES)
+    auto_delete(status)

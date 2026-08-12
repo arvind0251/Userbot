@@ -5,6 +5,7 @@ from pyrogram.errors import RPCError
 from pyrogram.enums import ChatMemberStatus
 
 from core.clients import app
+from core.autodelete import auto_delete
 from modules.owner.sudoers import sudo_only
 
 PREFIXES = [".", "!"]
@@ -35,13 +36,16 @@ def _target_from(message: Message):
 async def ban_cmd(client, message: Message):
     target, name = _target_from(message)
     if not target:
-        await message.reply_text("Reply to a user or give their ID: `.ban <id> [reason]`")
+        msg = await message.reply_text("Reply to a user or give their ID: `.ban <id> [reason]`")
+        auto_delete(msg)
         return
     try:
         await client.ban_chat_member(message.chat.id, target)
-        await message.reply_text(f"🚫 Banned <b>{name}</b>.")
+        msg = await message.reply_text(f"🚫 Banned <b>{name}</b>.")
+        auto_delete(msg)
     except RPCError as e:
-        await message.reply_text(f"❌ Couldn't ban: `{e}`")
+        msg = await message.reply_text(f"❌ Couldn't ban: `{e}`")
+        auto_delete(msg)
 
 
 @app.on_message(cmd("unban"))
@@ -49,13 +53,16 @@ async def ban_cmd(client, message: Message):
 async def unban_cmd(client, message: Message):
     target, name = _target_from(message)
     if not target:
-        await message.reply_text("Reply to a user or give their ID: `.unban <id>`")
+        msg = await message.reply_text("Reply to a user or give their ID: `.unban <id>`")
+        auto_delete(msg)
         return
     try:
         await client.unban_chat_member(message.chat.id, target)
-        await message.reply_text(f"✅ Unbanned <b>{name}</b>.")
+        msg = await message.reply_text(f"✅ Unbanned <b>{name}</b>.")
+        auto_delete(msg)
     except RPCError as e:
-        await message.reply_text(f"❌ Couldn't unban: `{e}`")
+        msg = await message.reply_text(f"❌ Couldn't unban: `{e}`")
+        auto_delete(msg)
 
 
 @app.on_message(cmd("kick"))
@@ -63,14 +70,17 @@ async def unban_cmd(client, message: Message):
 async def kick_cmd(client, message: Message):
     target, name = _target_from(message)
     if not target:
-        await message.reply_text("Reply to a user or give their ID: `.kick <id> [reason]`")
+        msg = await message.reply_text("Reply to a user or give their ID: `.kick <id> [reason]`")
+        auto_delete(msg)
         return
     try:
         await client.ban_chat_member(message.chat.id, target)
         await client.unban_chat_member(message.chat.id, target)  # kick = ban + unban
-        await message.reply_text(f"👢 Kicked <b>{name}</b>.")
+        msg = await message.reply_text(f"👢 Kicked <b>{name}</b>.")
+        auto_delete(msg)
     except RPCError as e:
-        await message.reply_text(f"❌ Couldn't kick: `{e}`")
+        msg = await message.reply_text(f"❌ Couldn't kick: `{e}`")
+        auto_delete(msg)
 
 
 @app.on_message(cmd("mute"))
@@ -78,13 +88,16 @@ async def kick_cmd(client, message: Message):
 async def mute_user_cmd(client, message: Message):
     target, name = _target_from(message)
     if not target:
-        await message.reply_text("Reply to a user or give their ID: `.mute <id>`")
+        msg = await message.reply_text("Reply to a user or give their ID: `.mute <id>`")
+        auto_delete(msg)
         return
     try:
         await client.restrict_chat_member(message.chat.id, target, MUTED)
-        await message.reply_text(f"🔇 Muted <b>{name}</b>.")
+        msg = await message.reply_text(f"🔇 Muted <b>{name}</b>.")
+        auto_delete(msg)
     except RPCError as e:
-        await message.reply_text(f"❌ Couldn't mute: `{e}`")
+        msg = await message.reply_text(f"❌ Couldn't mute: `{e}`")
+        auto_delete(msg)
 
 
 @app.on_message(cmd("unmute"))
@@ -92,13 +105,16 @@ async def mute_user_cmd(client, message: Message):
 async def unmute_user_cmd(client, message: Message):
     target, name = _target_from(message)
     if not target:
-        await message.reply_text("Reply to a user or give their ID: `.unmute <id>`")
+        msg = await message.reply_text("Reply to a user or give their ID: `.unmute <id>`")
+        auto_delete(msg)
         return
     try:
         await client.restrict_chat_member(message.chat.id, target, UNMUTED)
-        await message.reply_text(f"🔊 Unmuted <b>{name}</b>.")
+        msg = await message.reply_text(f"🔊 Unmuted <b>{name}</b>.")
+        auto_delete(msg)
     except RPCError as e:
-        await message.reply_text(f"❌ Couldn't unmute: `{e}`")
+        msg = await message.reply_text(f"❌ Couldn't unmute: `{e}`")
+        auto_delete(msg)
 
 
 # ===================== Whole chat (non-admins only, safety) =====================
@@ -123,6 +139,7 @@ async def banall_cmd(client, message: Message):
         except RPCError:
             continue
     await status.edit_text(f"🚫 Banned {count} member(s).")
+    auto_delete(status)
 
 
 @app.on_message(cmd("kickall"))
@@ -138,6 +155,7 @@ async def kickall_cmd(client, message: Message):
         except RPCError:
             continue
     await status.edit_text(f"👢 Kicked {count} member(s).")
+    auto_delete(status)
 
 
 @app.on_message(cmd("muteall"))
@@ -152,6 +170,7 @@ async def muteall_cmd(client, message: Message):
         except RPCError:
             continue
     await status.edit_text(f"🔇 Muted {count} member(s).")
+    auto_delete(status)
 
 
 @app.on_message(cmd("unmuteall"))
@@ -166,3 +185,4 @@ async def unmuteall_cmd(client, message: Message):
         except RPCError:
             continue
     await status.edit_text(f"🔊 Unmuted {count} member(s).")
+    auto_delete(status)

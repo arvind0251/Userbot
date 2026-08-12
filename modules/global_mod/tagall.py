@@ -4,6 +4,7 @@ from pyrogram.types import Message
 from pyrogram.errors import RPCError, FloodWait
 
 from core.clients import app
+from core.autodelete import auto_delete
 from modules.owner.sudoers import sudo_only
 
 PREFIXES = [".", "!"]
@@ -26,11 +27,13 @@ async def _tagall_worker(client, chat_id: int, custom_text: str):
                 continue
             members.append(member.user)
     except RPCError as e:
-        await client.send_message(chat_id, f"❌ Couldn't fetch member list: `{e}`")
+        msg = await client.send_message(chat_id, f"❌ Couldn't fetch member list: `{e}`")
+        auto_delete(msg)
         return
 
     if not members:
-        await client.send_message(chat_id, "No taggable members found.")
+        msg = await client.send_message(chat_id, "No taggable members found.")
+        auto_delete(msg)
         return
 
     try:
@@ -41,18 +44,21 @@ async def _tagall_worker(client, chat_id: int, custom_text: str):
             )
             text = f"{custom_text}\n{mentions}" if custom_text else mentions
             try:
-                await client.send_message(chat_id, text)
+                sent = await client.send_message(chat_id, text)
+                auto_delete(sent)
             except FloodWait as e:
                 await asyncio.sleep(e.value)
                 try:
-                    await client.send_message(chat_id, text)
+                    sent = await client.send_message(chat_id, text)
+                    auto_delete(sent)
                 except RPCError:
                     pass
             except RPCError:
                 pass
             await asyncio.sleep(DELAY_BETWEEN_BATCHES)
     except asyncio.CancelledError:
-        await client.send_message(chat_id, "🛑 Tagall stopped.")
+        msg = await client.send_message(chat_id, "🛑 Tagall stopped.")
+        auto_delete(msg)
         raise
     finally:
         TAGALL_TASKS.pop(chat_id, None)
@@ -69,11 +75,13 @@ async def tagall_cmd(client, message: Message):
     """
     chat_id = message.chat.id
     if chat_id in TAGALL_TASKS:
-        await message.reply_text("A tagall is already running here. Use `.tagallstop` to stop it.")
+        msg = await message.reply_text("A tagall is already running here. Use `.tagallstop` to stop it.")
+        auto_delete(msg)
         return
 
     custom_text = message.text.split(None, 1)[1] if len(message.command) > 1 else ""
-    await message.reply_text("🏷 Tagging everyone, this may take a bit... (`.tagallstop` to cancel)")
+    status = await message.reply_text("🏷 Tagging everyone, this may take a bit... (`.tagallstop` to cancel)")
+    auto_delete(status)
 
     task = asyncio.create_task(_tagall_worker(client, chat_id, custom_text))
     TAGALL_TASKS[chat_id] = task
@@ -84,7 +92,8 @@ async def tagall_cmd(client, message: Message):
 async def tagallstop_cmd(client, message: Message):
     task = TAGALL_TASKS.get(message.chat.id)
     if not task:
-        await message.reply_text("No tagall running here.")
+        msg = await message.reply_text("No tagall running here.")
+        auto_delete(msg)
         return
     task.cancel()
 
@@ -94,4 +103,5 @@ async def tagallstop_cmd(client, message: Message):
 async def tagme_cmd(client, message: Message):
     """Simple opt-in style tag: mentions just the person who ran the command."""
     user = message.from_user
-    await message.reply_text(f'<a href="tg://user?id={user.id}">{user.first_name}</a>')
+    msg = await message.reply_text(f'<a href="tg://user?id={user.id}">{user.first_name}</a>')
+    auto_delete(msg)

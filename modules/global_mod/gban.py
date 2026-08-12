@@ -3,6 +3,7 @@ from pyrogram.types import Message
 from pyrogram.errors import RPCError
 
 from core.clients import app
+from core.autodelete import auto_delete
 from database.mongo import gban_user, ungban_user, is_gbanned, get_gban_list, get_all_chats
 from modules.owner.sudoers import sudo_only
 
@@ -17,7 +18,8 @@ def cmd(name):
 @sudo_only
 async def gban_cmd(client, message: Message):
     if not message.reply_to_message and len(message.command) < 2:
-        await message.reply_text("Reply to a user or give their ID: `.gban <id> [reason]`")
+        msg = await message.reply_text("Reply to a user or give their ID: `.gban <id> [reason]`")
+        auto_delete(msg)
         return
 
     if message.reply_to_message:
@@ -40,13 +42,15 @@ async def gban_cmd(client, message: Message):
             continue
 
     await status.edit_text(f"✅ Globally banned `{target}` in {banned_in} chat(s).\nReason: {reason}")
+    auto_delete(status)
 
 
 @app.on_message(cmd("ungban"))
 @sudo_only
 async def ungban_cmd(client, message: Message):
     if not message.reply_to_message and len(message.command) < 2:
-        await message.reply_text("Reply to a user or give their ID: `.ungban <id>`")
+        msg = await message.reply_text("Reply to a user or give their ID: `.ungban <id>`")
+        auto_delete(msg)
         return
     target = message.reply_to_message.from_user.id if message.reply_to_message else int(message.command[1])
     await ungban_user(target)
@@ -62,6 +66,7 @@ async def ungban_cmd(client, message: Message):
             continue
 
     await status.edit_text(f"✅ Un-gbanned `{target}` in {unbanned_in} chat(s).")
+    auto_delete(status)
 
 
 @app.on_message(cmd("gbanlist"))
@@ -69,9 +74,11 @@ async def ungban_cmd(client, message: Message):
 async def gbanlist_cmd(client, message: Message):
     entries = await get_gban_list()
     if not entries:
-        await message.reply_text("Gban list is empty.")
+        msg = await message.reply_text("Gban list is empty.")
+        auto_delete(msg)
         return
     text = "🌐 <b>Global Ban List</b>\n\n"
     for e in entries[:50]:
         text += f"• <code>{e['user_id']}</code> — {e.get('reason', 'No reason')}\n"
-    await message.reply_text(text)
+    msg = await message.reply_text(text)
+    auto_delete(msg)

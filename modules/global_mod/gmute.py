@@ -3,6 +3,7 @@ from pyrogram.types import Message, ChatPermissions
 from pyrogram.errors import RPCError
 
 from core.clients import app
+from core.autodelete import auto_delete
 from database.mongo import get_all_chats
 from modules.owner.sudoers import sudo_only
 
@@ -21,7 +22,8 @@ def cmd(name):
 @sudo_only
 async def gmute_cmd(client, message: Message):
     if not message.reply_to_message and len(message.command) < 2:
-        await message.reply_text("Reply to a user or give their ID: `.gmute <id>`")
+        msg = await message.reply_text("Reply to a user or give their ID: `.gmute <id>`")
+        auto_delete(msg)
         return
     target = message.reply_to_message.from_user.id if message.reply_to_message else int(message.command[1])
 
@@ -35,13 +37,15 @@ async def gmute_cmd(client, message: Message):
         except RPCError:
             continue
     await status.edit_text(f"🔇 Globally muted `{target}` in {muted_in} chat(s).")
+    auto_delete(status)
 
 
 @app.on_message(cmd("gunmute"))
 @sudo_only
 async def gunmute_cmd(client, message: Message):
     if not message.reply_to_message and len(message.command) < 2:
-        await message.reply_text("Reply to a user or give their ID: `.gunmute <id>`")
+        msg = await message.reply_text("Reply to a user or give their ID: `.gunmute <id>`")
+        auto_delete(msg)
         return
     target = message.reply_to_message.from_user.id if message.reply_to_message else int(message.command[1])
 
@@ -55,3 +59,4 @@ async def gunmute_cmd(client, message: Message):
         except RPCError:
             continue
     await status.edit_text(f"🔊 Globally unmuted `{target}` in {unmuted_in} chat(s).")
+    auto_delete(status)

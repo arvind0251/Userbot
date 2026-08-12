@@ -3,6 +3,7 @@ from pyrogram import filters
 from pyrogram.types import Message
 
 from core.clients import app
+from core.autodelete import auto_delete
 from config import OWNER_ID
 from database.mongo import add_sudo, remove_sudo, get_sudoers
 
@@ -23,7 +24,8 @@ def sudo_only(func):
     async def wrapper(client, message: Message, *args, **kwargs):
         user_id = message.from_user.id if message.from_user else None
         if user_id not in SUDO_USERS:
-            await message.reply_text("🚫 You're not authorized to use this command.")
+            msg = await message.reply_text("🚫 You're not authorized to use this command.")
+            auto_delete(msg)
             return
         return await func(client, message, *args, **kwargs)
     return wrapper
@@ -34,7 +36,8 @@ def owner_only(func):
     async def wrapper(client, message: Message, *args, **kwargs):
         user_id = message.from_user.id if message.from_user else None
         if user_id != OWNER_ID:
-            await message.reply_text("🚫 Owner-only command.")
+            msg = await message.reply_text("🚫 Owner-only command.")
+            auto_delete(msg)
             return
         return await func(client, message, *args, **kwargs)
     return wrapper
@@ -44,28 +47,33 @@ def owner_only(func):
 @owner_only
 async def addsudo_cmd(client, message: Message):
     if not message.reply_to_message and len(message.command) < 2:
-        await message.reply_text("Reply to a user or give their ID: `.addsudo <id>`")
+        msg = await message.reply_text("Reply to a user or give their ID: `.addsudo <id>`")
+        auto_delete(msg)
         return
     target = message.reply_to_message.from_user.id if message.reply_to_message else int(message.command[1])
     await add_sudo(target)
     SUDO_USERS.add(target)
-    await message.reply_text(f"✅ Added `{target}` as sudo user.")
+    msg = await message.reply_text(f"✅ Added `{target}` as sudo user.")
+    auto_delete(msg)
 
 
 @app.on_message(filters.command("delsudo", prefixes=[".", "!"]))
 @owner_only
 async def delsudo_cmd(client, message: Message):
     if not message.reply_to_message and len(message.command) < 2:
-        await message.reply_text("Reply to a user or give their ID: `.delsudo <id>`")
+        msg = await message.reply_text("Reply to a user or give their ID: `.delsudo <id>`")
+        auto_delete(msg)
         return
     target = message.reply_to_message.from_user.id if message.reply_to_message else int(message.command[1])
     await remove_sudo(target)
     SUDO_USERS.discard(target)
-    await message.reply_text(f"✅ Removed `{target}` from sudo users.")
+    msg = await message.reply_text(f"✅ Removed `{target}` from sudo users.")
+    auto_delete(msg)
 
 
 @app.on_message(filters.command("sudolist", prefixes=[".", "!"]))
 @sudo_only
 async def sudolist_cmd(client, message: Message):
     text = "👑 <b>Sudo Users</b>\n\n" + "\n".join(f"• <code>{uid}</code>" for uid in SUDO_USERS)
-    await message.reply_text(text)
+    msg = await message.reply_text(text)
+    auto_delete(msg)

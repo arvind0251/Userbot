@@ -2,6 +2,7 @@ from pyrogram import filters
 from pyrogram.types import Message
 
 from core.clients import app
+from core.autodelete import auto_delete
 from modules.owner.sudoers import sudo_only
 
 PREFIXES = [".", "!"]
@@ -15,7 +16,8 @@ def cmd(name):
 @sudo_only
 async def del_cmd(client, message: Message):
     if not message.reply_to_message:
-        await message.reply_text("Reply to the message you want to delete with `.del`")
+        msg = await message.reply_text("Reply to the message you want to delete with `.del`")
+        auto_delete(msg)
         return
     await message.reply_to_message.delete()
     await message.delete()
@@ -26,7 +28,8 @@ async def del_cmd(client, message: Message):
 async def purge_cmd(client, message: Message):
     """Deletes all messages between the replied-to message and this command."""
     if not message.reply_to_message:
-        await message.reply_text("Reply to the message to purge from with `.purge`")
+        msg = await message.reply_text("Reply to the message to purge from with `.purge`")
+        auto_delete(msg)
         return
 
     start_id = message.reply_to_message.id
@@ -43,3 +46,4 @@ async def purge_cmd(client, message: Message):
             continue
 
     status = await client.send_message(message.chat.id, f"🧹 Purged {deleted} messages.")
+    auto_delete(status)
