@@ -61,7 +61,7 @@ async def _finalize_login(user_id: int, temp_client: Client, message: Message):
             session_string=session_string,
             in_memory=True,
         )
-        register_common_handlers(clone_client)
+        await register_common_handlers(clone_client)
         await clone_client.start()
         me = await clone_client.get_me()
         label = f"@{me.username}" if me.username else me.first_name
@@ -110,7 +110,7 @@ async def login_cmd(client, message: Message):
                 session_string=session_string,
                 in_memory=True,
             )
-            register_common_handlers(clone_client)
+            await register_common_handlers(clone_client)
             await clone_client.start()
             me = await clone_client.get_me()
             label = f"@{me.username}" if me.username else me.first_name

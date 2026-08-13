@@ -37,12 +37,14 @@ self-service `.login`/`.clone` flow, which is intentionally open to anyone
 - **Welcome messages**: `.welcome on`/`.welcome off` toggles a per-chat welcome message
   for new members (off by default); `.setwelcome <text>` customizes it with `{name}`,
   `{mention}`, `{chat}`, `{id}` placeholders.
-- **Cloning**: `.clone <bot_token>` (owner/sudo only) spins up a separate bot that reuses
-  this account's basic utility commands (ping/alive/id/help).
-  `.unclone`/`.clonelist` manage running clones.
+- **Cloning**: `.clone <bot_token>` (owner/sudo only) spins up a separate bot that gets
+  the **full command set** — every handler currently registered on the main userbot is
+  copied onto the clone automatically, so new commands added later work on clones too
+  with no extra changes needed. `.unclone`/`.clonelist` manage running clones.
 - **Owner/sudo login system**: `.login` — runs through **the bot account (`BOT_TOKEN`),
   not the userbot** — so this flow never touches the main personal account. Restricted
-  to owner/sudo (via `@sudo_only`), same as everything else. Two ways to use it:
+  to owner/sudo (via `@sudo_only`), same as everything else. The resulting clone also
+  gets the full command set. Two ways to use it:
   - `.login` (no args) — guided flow: bot asks for your phone number, sends you a
     Telegram login code, you reply with the code (and 2FA password if you have one),
     and it logs you in automatically, then hands you the resulting session string.

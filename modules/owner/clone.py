@@ -44,7 +44,7 @@ async def clone_cmd(client, message: Message):
             bot_token=bot_token,
             in_memory=True,
         )
-        register_common_handlers(clone_client)
+        await register_common_handlers(clone_client)
         await clone_client.start()
         CLONES[bot_token] = clone_client
         me = await clone_client.get_me()

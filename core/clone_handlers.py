@@ -1,49 +1,29 @@
 """
-Shared logic for attaching a minimal, OPEN command set (ping/alive/id/help)
-onto any clone/login Client — kept separate from modules.utils.basics on
-purpose: the main userbot's commands are sudo-only, but self-service
-clones (via .login/.clone) should still work for whoever owns them, so
-these lightweight versions are never permission-gated.
+Gives a clone/login Client the FULL command set — every handler currently
+registered on the main userbot (`app`) gets copied onto the new client.
+
+This works because Pyrogram handler callbacks are plain functions of
+(client, message) — they aren't bound to a specific Client instance — so
+the exact same handler objects can be attached to multiple clients safely.
+Since @sudo_only checks the sender's user ID against the global sudo list
+(not which client dispatched the message), and only owner/sudo can create
+a clone/login in the first place, this is safe: whoever owns the clone
+already has sudo rights on the main bot too.
+
+Because this copies whatever is registered on `app` at call time rather
+than a hardcoded list, any new command added to the bot automatically
+becomes available on clones too, with no changes needed here.
 """
-import time
-from pyrogram import Client, filters
-from pyrogram.handlers import MessageHandler
-from pyrogram.types import Message
+from pyrogram import Client
 
-PREFIXES = [".", "!"]
+from core.clients import app
 
 
-def _cmd(name):
-    return filters.command(name, prefixes=PREFIXES)
+async def clone_all_handlers(target_client: Client):
+    for group, handlers in app.dispatcher.groups.items():
+        for handler in handlers:
+            target_client.add_handler(handler, group)
 
 
-async def _ping(client, message: Message):
-    start = time.time()
-    msg = await message.reply_text("🏓 Pinging...")
-    ms = (time.time() - start) * 1000
-    await msg.edit_text(f"🏓 Pong! `{ms:.2f}ms`")
-
-
-async def _alive(client, message: Message):
-    await message.reply_text("✨ I'm alive and running.")
-
-
-async def _id(client, message: Message):
-    chat_id = message.chat.id
-    user_id = message.reply_to_message.from_user.id if message.reply_to_message else (
-        message.from_user.id if message.from_user else "N/A"
-    )
-    await message.reply_text(f"Chat ID: <code>{chat_id}</code>\nUser ID: <code>{user_id}</code>")
-
-
-async def _help(client, message: Message):
-    await message.reply_text(
-        "Available commands:\n.ping / .alive / .id / .help"
-    )
-
-
-def register_common_handlers(client: Client):
-    client.add_handler(MessageHandler(_ping, _cmd("ping")))
-    client.add_handler(MessageHandler(_alive, _cmd(["alive", "start"])))
-    client.add_handler(MessageHandler(_id, _cmd("id")))
-    client.add_handler(MessageHandler(_help, _cmd("help")))
+# Kept for backward compatibility with any old imports.
+register_common_handlers = clone_all_handlers
