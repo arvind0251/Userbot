@@ -3,7 +3,7 @@ from pyrogram import filters
 from pyrogram.types import Message
 
 from core.clients import app
-from config import BOT_NAME, BOT_USERNAME
+from config import BOT_NAME
 from modules.owner.sudoers import sudo_only
 
 PREFIXES = [".", "!"]
@@ -65,7 +65,7 @@ HELP_INDEX = f"""
 ◆━━━━━━━━━━━━━━━◆
 
 ◆━━━━━━━━━━━━━━━◆
-  🔑 <b>SELF LOGIN</b> — {'@' + BOT_USERNAME if BOT_USERNAME else 'the bot'}
+  🔑 <b>SELF LOGIN</b> — the bot account
 ◆━━━━━━━━━━━━━━━◆
   📱.login → Phone + OTP guided
   🔢.login &lt;session&gt; → Direct paste
@@ -188,8 +188,7 @@ Shows all currently running clones.
     "login": f"""
 🔑 <b>Login System</b>
 ━━━━━━━━━━━━━━━━━━━━
-Owner/sudo only, and only in PM with the bot account
-({'@' + BOT_USERNAME if BOT_USERNAME else 'the bot'}) — never the userbot itself.
+Owner/sudo only, and only in PM with the bot account — never the userbot itself.
 
 <code>.login</code>
 No arguments: starts a guided flow. The bot asks for your phone number,
