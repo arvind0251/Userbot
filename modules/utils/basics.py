@@ -44,23 +44,108 @@ async def id_cmd(client, message: Message):
 # ===================== Help: index + detailed per-category pages =====================
 
 HELP_INDEX = f"""
-✨ <b>{BOT_NAME}</b> — Command List
-━━━━━━━━━━━━━━━━━━━━
+◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆
+      ✨ <b>{BOT_NAME}</b> — COMMAND LIST
+◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆
 
-👑 <code>.help owner</code> — sudo/owner management, cloning
-🔑 <code>.help login</code> — self-service account login
-🌐 <code>.help global</code> — moderation across all chats
-👮 <code>.help mod</code> — moderation in this chat
-⚠️ <code>.help warn</code> — warn system
-📢 <code>.help broadcast</code> — broadcast to all chats
-📜 <code>.help sha</code> — shayari / love messages
-👋 <code>.help bro</code> — casual one-off messages
-🧹 <code>.help chat</code> — delete / purge tools
-🎨 <code>.help fun</code> — fun animations
-⚙️ <code>.help utility</code> — ping, id, info, etc.
+◆━━━━━━━━━━━━━━━◆
+     👑 <b>MALIK KE HUKUM — OWNER</b>
+◆━━━━━━━━━━━━━━━◆
+  🌟.addsudo → Sudo user banao
+  🗑️.delsudo → Sudo hatao
+  📜.sudolist → Sudo list dekho
 
-━━━━━━━━━━━━━━━━━━━━
-Type <code>.help &lt;category&gt;</code> (e.g. <code>.help mod</code>) for full usage and examples.
+  ✅.approve → PM Guard se chhoot
+  ❌.unapprove → Chhoot hatao
+  📋.approved → Approved list
+
+  👥.clone → Bot token se clone
+  🚫.unclone → Clone hatao
+  📚.clonelist → Clone list
+◆━━━━━━━━━━━━━━━◆
+
+◆━━━━━━━━━━━━━━━◆
+  🔑 <b>SELF LOGIN</b> — {'@' + BOT_USERNAME if BOT_USERNAME else 'the bot'}
+◆━━━━━━━━━━━━━━━◆
+  📱.login → Phone + OTP guided
+  🔢.login &lt;session&gt; → Direct paste
+  🚫.cancellogin → Login cancel
+  👋.logout → Logout
+  ℹ️.mylogin → Login info
+◆━━━━━━━━━━━━━━━◆
+
+◆━━━━━━━━━━━━━━━◆
+     🌐 <b>GLOBAL DANDA — GLOBAL MOD</b>
+◆━━━━━━━━━━━━━━━◆
+  🔨.gban → Har jagah Ban
+  🕊️.ungban → Global Unban
+  📜.gbanlist → GBan List
+  🔇.gmute → Har jagah Mute
+  🔊.gunmute → Global Unmute
+◆━━━━━━━━━━━━━━━◆
+
+◆━━━━━━━━━━━━━━━◆
+     👮 <b>CHAT KA RAJA — CHAT MOD</b>
+◆━━━━━━━━━━━━━━━◆
+  🔨.ban 🕊️.unban 👢.kick
+  🔇.mute 🔊.unmute
+  💥.banall 💥.kickall 💥.muteall 💥.unmuteall
+    → Non-Admins only
+  📢.tagall [msg] → Sabko tag karo
+  🛑.tagallstop → Tagall band
+  🙋.tagme → Khud ko tag
+◆━━━━━━━━━━━━━━━◆
+
+◆━━━━━━━━━━━━━━━◆
+     ⚠️ <b>WARN SYSTEM</b>
+◆━━━━━━━━━━━━━━━◆
+  ⚠️.warn → Warning do
+  ✅.unwarn → Warning hatao
+  📊.warns → Kitni warning hai
+  🔄.resetwarns → Warning reset
+    - 3 Warn = Seedha Auto Ban 😈
+◆━━━━━━━━━━━━━━━◆
+
+◆━━━━━━━━━━━━━━━◆
+     📢 <b>BROADCAST</b>
+◆━━━━━━━━━━━━━━━◆
+  📣.broadcast → Text ya reply karke sabko bhejo
+◆━━━━━━━━━━━━━━━◆
+
+◆━━━━━━━━━━━━━━━◆
+     📜 <b>SHAYARI / LOVE</b>
+◆━━━━━━━━━━━━━━━◆
+  🌹.sha → Reply na ho to poore group ko
+  💌.sha (reply) → Kisi ek ko tag karke
+  ⏰.sha 20 → Har 20 min auto (10 min min)
+  🛑.sha stop → Auto band
+  ❤️.love → Same, love wali lines
+◆━━━━━━━━━━━━━━━◆
+
+◆━━━━━━━━━━━━━━━◆
+     👋 <b>MASTI / FUN</b>
+◆━━━━━━━━━━━━━━━◆
+  😎.bro → Casual (DM / reply)
+  🐱.cat 🌹.rose 💖.heart
+  💻.hacker ❌.error
+  🦋.butterfly 👶.myson
+◆━━━━━━━━━━━━━━━◆
+
+◆━━━━━━━━━━━━━━━◆
+     🧹 <b>CHAT TOOLS</b>
+◆━━━━━━━━━━━━━━━◆
+  🗑️.del → Reply msg delete
+  🧹.purge → Range delete
+◆━━━━━━━━━━━━━━━◆
+
+◆━━━━━━━━━━━━━━━◆
+     ⚙️ <b>UTILITY</b>
+◆━━━━━━━━━━━━━━━◆
+  ⚡.ping ✅.alive 🆔.id
+  ℹ️.info 📖.help
+◆━━━━━━━━━━━━━━━◆
+
+Type <code>.help &lt;category&gt;</code> (owner/login/global/mod/warn/broadcast/sha/bro/chat/fun/utility) for full usage + examples.
 """
 
 HELP_PAGES = {
