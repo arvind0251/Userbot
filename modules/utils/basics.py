@@ -139,13 +139,20 @@ HELP_INDEX = f"""
 ◆━━━━━━━━━━━━━━━◆
 
 ◆━━━━━━━━━━━━━━━◆
+     👋 <b>WELCOME MESSAGES</b>
+◆━━━━━━━━━━━━━━━◆
+  🔛.welcome on/off → Toggle welcome
+  ✍️.setwelcome &lt;text&gt; → Custom message
+◆━━━━━━━━━━━━━━━◆
+
+◆━━━━━━━━━━━━━━━◆
      ⚙️ <b>UTILITY</b>
 ◆━━━━━━━━━━━━━━━◆
   ⚡.ping ✅.alive 🆔.id
   ℹ️.info 📖.help
 ◆━━━━━━━━━━━━━━━◆
 
-Type <code>.help &lt;category&gt;</code> (owner/login/global/mod/warn/broadcast/sha/bro/chat/fun/utility) for full usage + examples.
+Type <code>.help &lt;category&gt;</code> (owner/login/global/mod/warn/broadcast/sha/bro/chat/welcome/fun/utility) for full usage + examples.
 """
 
 HELP_PAGES = {
@@ -351,6 +358,22 @@ No arguments — just send the command and watch:
 <code>.heart</code> — cycling color-heart animation
 
 The final art stays in the chat once the animation finishes.
+""",
+
+    "welcome": """
+👋 <b>Welcome Messages</b>
+━━━━━━━━━━━━━━━━━━━━
+
+<code>.welcome on</code> / <code>.welcome off</code>
+Toggles a welcome message for new members in this chat. Off by default.
+
+<code>.setwelcome &lt;text&gt;</code>
+Sets a custom message. Placeholders you can use:
+<code>{name}</code> — first name · <code>{mention}</code> — clickable mention
+<code>{chat}</code> — chat title · <code>{id}</code> — user ID
+Example: <code>.setwelcome Hi {mention}, welcome to {chat}! 🎉</code>
+
+Run <code>.setwelcome</code> with no text to see the current message.
 """,
 
     "utility": """

@@ -34,6 +34,9 @@ self-service `.login`/`.clone` flow, which is intentionally open to anyone
   person you chose, never automated or looped).
 - **Fun animations**: `.cat`, `.rose`, `.hacker`, `.error`, `.butterfly`, `.myson`,
   `.heart` — cosmetic ASCII-art/emoji animations.
+- **Welcome messages**: `.welcome on`/`.welcome off` toggles a per-chat welcome message
+  for new members (off by default); `.setwelcome <text>` customizes it with `{name}`,
+  `{mention}`, `{chat}`, `{id}` placeholders.
 - **Cloning**: `.clone <bot_token>` (owner/sudo only) spins up a separate bot that reuses
   this account's basic utility commands (ping/alive/id/help).
   `.unclone`/`.clonelist` manage running clones.

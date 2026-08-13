@@ -19,6 +19,7 @@ MODULES = [
     "modules.global_mod.tagall",
     "modules.global_mod.shayari",
     "modules.global_mod.bro",
+    "modules.global_mod.welcome",
     "modules.owner.clone",
     "modules.public.login",
     "modules.public.start",

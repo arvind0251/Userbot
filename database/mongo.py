@@ -152,3 +152,39 @@ async def unapprove_pm(user_id: int):
 async def get_approved_pm() -> list[int]:
     async with _lock:
         return list(_read().get("approved_pm", []))
+
+
+# ===================== Welcome messages (per chat) =====================
+DEFAULT_WELCOME_TEXT = "👋 Welcome {mention} to {chat}!"
+
+
+async def set_welcome_enabled(chat_id: int, enabled: bool):
+    async with _lock:
+        data = _read()
+        data.setdefault("welcome", {})
+        entry = data["welcome"].setdefault(str(chat_id), {})
+        entry["enabled"] = enabled
+        _write(data)
+
+
+async def get_welcome_enabled(chat_id: int) -> bool:
+    async with _lock:
+        data = _read()
+        entry = data.get("welcome", {}).get(str(chat_id), {})
+        return bool(entry.get("enabled", False))
+
+
+async def set_welcome_text(chat_id: int, text: str):
+    async with _lock:
+        data = _read()
+        data.setdefault("welcome", {})
+        entry = data["welcome"].setdefault(str(chat_id), {})
+        entry["text"] = text
+        _write(data)
+
+
+async def get_welcome_text(chat_id: int) -> str:
+    async with _lock:
+        data = _read()
+        entry = data.get("welcome", {}).get(str(chat_id), {})
+        return entry.get("text") or DEFAULT_WELCOME_TEXT
