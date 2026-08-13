@@ -42,48 +42,52 @@ async def id_cmd(client, message: Message):
 
 
 HELP_TEXT = f"""
-<b>👑 Owner Commands</b>
-.addsudo / .delsudo / .sudolist
-.approve / .unapprove / .approved — exempt someone from PM Guard warnings
-.clone <bot_token> / .unclone <bot_token> / .clonelist
+✨ <b>{BOT_NAME}</b> — Command List
+━━━━━━━━━━━━━━━━━━━━
 
-<b>🔑 Self-Service — PM the BOT ({'@' + BOT_USERNAME if BOT_USERNAME else 'the helper bot'}), not this account</b>
-.login — guided phone number + OTP login (or `.login <session_string>` to paste one directly)
-.cancellogin / .logout / .mylogin
+👑 <b>Owner</b>
+┃ <code>.addsudo</code> · <code>.delsudo</code> · <code>.sudolist</code>
+┃ <code>.approve</code> · <code>.unapprove</code> · <code>.approved</code>
+┃ <code>.clone &lt;token&gt;</code> · <code>.unclone</code> · <code>.clonelist</code>
 
-<b>🌐 Global Moderation</b>
-.gban / .ungban / .gbanlist
-.gmute / .gunmute (across all chats)
+🔑 <b>Self-Service</b> <i>(PM {'@' + BOT_USERNAME if BOT_USERNAME else 'the bot'}, not this account)</i>
+┃ <code>.login</code> — phone + OTP, or paste a session string
+┃ <code>.cancellogin</code> · <code>.logout</code> · <code>.mylogin</code>
 
-<b>👮 This-Chat Moderation</b>
-.ban / .unban / .kick / .mute / .unmute
-.banall / .kickall / .muteall / .unmuteall (non-admins only)
-.tagall [message] — mention everyone in small batches
-.tagallstop — stop a tagall that's in progress
-.tagme — mention yourself
+🌐 <b>Global Moderation</b>
+┃ <code>.gban</code> · <code>.ungban</code> · <code>.gbanlist</code>
+┃ <code>.gmute</code> · <code>.gunmute</code>
 
-<b>⚠️ Warn System</b>
-.warn / .unwarn / .warns / .resetwarns (auto-ban at 3 warns)
+👮 <b>This-Chat Moderation</b>
+┃ <code>.ban</code> · <code>.unban</code> · <code>.kick</code> · <code>.mute</code> · <code>.unmute</code>
+┃ <code>.banall</code> · <code>.kickall</code> · <code>.muteall</code> · <code>.unmuteall</code>
+┃ <code>.tagall [msg]</code> · <code>.tagallstop</code> · <code>.tagme</code>
 
-<b>📢 Broadcast</b>
-.broadcast <text> — or reply to a message with .broadcast
+⚠️ <b>Warn System</b>
+┃ <code>.warn</code> · <code>.unwarn</code> · <code>.warns</code> · <code>.resetwarns</code>
+┃ <i>auto-ban at 3 warns</i>
 
-<b>📜 Shayari / Love</b>
-.sha — reply to tag one person; alone tags whole group; `.sha 20` starts recurring (every 20 min); `.sha stop` stops it
-.love — same modes as .sha, with love-themed lines
+📢 <b>Broadcast</b>
+┃ <code>.broadcast &lt;text&gt;</code> — or reply with <code>.broadcast</code>
 
-<b>👋 Casual</b>
-.bro — one-shot casual text (DM: sends there; group: reply to someone to send it to them)
+📜 <b>Shayari / Love</b>
+┃ <code>.sha</code> · <code>.love</code>
+┃ <i>reply = one person · alone = whole group · +minutes = recurring · stop = stop</i>
 
-<b>🧹 Chat Tools</b>
-.del — delete replied message
-.purge — delete range of messages
+👋 <b>Casual</b>
+┃ <code>.bro</code> — DM sends there · group needs a reply
 
-<b>⚙️ Utility</b>
-.ping / .alive / .id / .info / .help
+🧹 <b>Chat Tools</b>
+┃ <code>.del</code> · <code>.purge</code>
 
-<b>🎨 Fun</b>
-.cat / .rose / .hacker / .error / .butterfly / .myson / .heart
+🎨 <b>Fun</b>
+┃ <code>.cat</code> · <code>.rose</code> · <code>.hacker</code> · <code>.error</code>
+┃ <code>.butterfly</code> · <code>.myson</code> · <code>.heart</code>
+
+⚙️ <b>Utility</b>
+┃ <code>.ping</code> · <code>.alive</code> · <code>.id</code> · <code>.info</code> · <code>.help</code>
+
+━━━━━━━━━━━━━━━━━━━━
 """
 
 
