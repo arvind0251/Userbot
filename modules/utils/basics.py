@@ -186,9 +186,9 @@ Shows all currently running clones.
 """,
 
     "login": f"""
-🔑 <b>Self-Service Login</b>
+🔑 <b>Login System</b>
 ━━━━━━━━━━━━━━━━━━━━
-Works for anyone, but only in PM with the bot account
+Owner/sudo only, and only in PM with the bot account
 ({'@' + BOT_USERNAME if BOT_USERNAME else 'the bot'}) — never the userbot itself.
 
 <code>.login</code>

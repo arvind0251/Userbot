@@ -1,5 +1,5 @@
 """
-Two ways to self-login (OPEN to any user, no sudo needed, PM-only for safety):
+Two ways to log an account in (owner/sudo only, PM-only for safety):
 
   1. `.login <string_session>` — paste an existing Pyrogram string session directly.
   2. `.login` (no args) — guided phone number + OTP flow: bot asks for your phone
@@ -27,6 +27,7 @@ if bot is None:
     )
 from core.clone_handlers import register_common_handlers
 from config import API_ID, API_HASH
+from modules.owner.sudoers import sudo_only
 
 PREFIXES = [".", "!"]
 
@@ -85,6 +86,7 @@ async def _finalize_login(user_id: int, temp_client: Client, message: Message):
 
 
 @bot.on_message(filters.command("login", prefixes=PREFIXES))
+@sudo_only
 async def login_cmd(client, message: Message):
     if message.chat.type.name != "PRIVATE":
         await message.reply_text(
@@ -144,6 +146,7 @@ async def login_cmd(client, message: Message):
 
 
 @bot.on_message(filters.command("cancellogin", prefixes=PREFIXES) & filters.private)
+@sudo_only
 async def cancellogin_cmd(client, message: Message):
     user_id = message.from_user.id
     if user_id not in LOGIN_STATES:
@@ -154,6 +157,7 @@ async def cancellogin_cmd(client, message: Message):
 
 
 @bot.on_message(filters.command("logout", prefixes=PREFIXES) & filters.private)
+@sudo_only
 async def logout_cmd(client, message: Message):
     user_id = message.from_user.id
     entry = USER_CLONES.pop(user_id, None)
@@ -168,6 +172,7 @@ async def logout_cmd(client, message: Message):
 
 
 @bot.on_message(filters.command("mylogin", prefixes=PREFIXES) & filters.private)
+@sudo_only
 async def mylogin_cmd(client, message: Message):
     entry = USER_CLONES.get(message.from_user.id)
     if not entry:

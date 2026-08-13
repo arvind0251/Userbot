@@ -37,17 +37,16 @@ self-service `.login`/`.clone` flow, which is intentionally open to anyone
 - **Cloning**: `.clone <bot_token>` (owner/sudo only) spins up a separate bot that reuses
   this account's basic utility commands (ping/alive/id/help).
   `.unclone`/`.clonelist` manage running clones.
-- **Open self-service login**: `.login` — works for **anyone**, PM-only for security,
-  and runs through **the bot account (`BOT_TOKEN`), not the userbot** — so this flow
-  never touches the main personal account. Two ways to use it:
+- **Owner/sudo login system**: `.login` — runs through **the bot account (`BOT_TOKEN`),
+  not the userbot** — so this flow never touches the main personal account. Restricted
+  to owner/sudo (via `@sudo_only`), same as everything else. Two ways to use it:
   - `.login` (no args) — guided flow: bot asks for your phone number, sends you a
     Telegram login code, you reply with the code (and 2FA password if you have one),
     and it logs you in automatically, then hands you the resulting session string.
   - `.login <string_session>` — paste an existing session string directly, if you
     already generated one yourself.
-  `.logout` / `.mylogin` / `.cancellogin` manage your own login. One active login
-  per person; the resulting session string is equivalent to full account access, so this
-  should only be offered to people who trust whoever operates the server.
+  `.logout` / `.mylogin` / `.cancellogin` manage the active login. One active login
+  at a time; the resulting session string is equivalent to full account access.
 
 ## Setup
 
