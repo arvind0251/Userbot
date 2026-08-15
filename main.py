@@ -1,7 +1,8 @@
 import asyncio
 import importlib
 
-from core.clients import app, bot
+from core.clients import app, bot, assistant
+from core.call_manager import pytgcalls
 from core.autodelete import register_trigger_autodelete
 from database.mongo import add_chat
 from modules.owner.sudoers import load_sudoers
@@ -10,6 +11,8 @@ from modules.owner.sudoers import load_sudoers
 MODULES = [
     "modules.owner.sudoers",
     "modules.owner.pmguard",
+    "modules.vc.play",
+    "modules.vc.controls",
     "modules.global_mod.gban",
     "modules.global_mod.gmute",
     "modules.global_mod.gdel",
@@ -57,6 +60,13 @@ async def main():
     if bot:
         await bot.start()
         print("[Bot] Bot client started.")
+
+    if assistant:
+        await assistant.start()
+        print("[Bot] Assistant client started.")
+
+    await pytgcalls.start()
+    print("[Bot] PyTgCalls started.")
 
     print("[Bot] Bot is ready.")
 

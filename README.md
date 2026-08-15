@@ -7,6 +7,11 @@ self-service `.login`/`.clone` flow, which is intentionally open to anyone
 
 ## Features
 
+- **Music/VC**: `.play`, `.vply`, `.cplay`, `.cvply` — play audio/video in a group's voice
+  chat, with a per-chat queue. `.pause`/`.resume`/`.skip`/`.stop`, `.vmute`/`.vunmute`.
+  Uses [Kurigram](https://github.com/KurimuzonAkuma/pyrogram) + PyTgCalls v2 for the VC
+  connection and BabyAPI (`BASE_URL`/`API_KEY`) as the stream source. An optional
+  `ASSISTANT_SESSION` account can join VCs instead of tying up the main account.
 - **Owner/Sudo system**: `.addsudo`, `.delsudo`, `.sudolist` — gate all sensitive commands.
 - **PM Guard**: warns and eventually blocks strangers who spam the userbot's PMs.
   `.approve` / `.unapprove` / `.approved` let sudo users exempt specific people from
@@ -71,11 +76,15 @@ python3 main.py
 | `API_ID` / `API_HASH` | https://my.telegram.org |
 | `STRING_SESSION` | Generate with Kurigram (`Client(...).export_session_string()`) for the account you want the userbot to run as |
 | `OWNER_ID` | Your numeric Telegram user ID (e.g. via @userinfobot) |
+| `API_KEY` | Your BabyAPI key (needed for `.play`/`.vply` to actually fetch audio/video) |
 
 ### Optional
 
 - `BOT_TOKEN` — a helper bot account that runs the self-service `.login`/`.clone` flow.
   Required if you want that feature at all.
+- `ASSISTANT_SESSION` — a second account's session string, dedicated to joining VCs so
+  your main account isn't tied up in every call. Falls back to the main account if unset.
+- `BASE_URL` — BabyAPI base URL, defaults to `https://api.babiesiq.tech`.
 - `LOG_GROUP_ID` — a group/channel ID to send startup/error logs to.
 
 ## Project structure
@@ -85,11 +94,16 @@ userbot/
 ├── main.py                  entry point
 ├── config.py                env var loading
 ├── core/
-│   ├── clients.py             Pyrogram clients (app / bot)
-│   └── clone_handlers.py      shared open command-set for clone/login clients
+│   ├── clients.py             Pyrogram clients (app / bot / assistant)
+│   ├── call_manager.py        PyTgCalls instance + queue helpers
+│   └── clone_handlers.py      copies app's full handler set onto clone/login clients
 ├── database/
 │   └── mongo.py               sudoers / gban / warns / chats / approved — local storage.json file
 └── modules/
+    ├── vc/
+    │   ├── streams.py           BabyAPI fetch logic
+    │   ├── play.py               .play/.vply/.cplay/.cvply
+    │   └── controls.py           .pause/.resume/.skip/.stop/.vmute/.vunmute
     ├── owner/
     │   ├── sudoers.py         sudo add/del/list + @sudo_only decorator
     │   ├── pmguard.py         PM spam warning/block + approve system

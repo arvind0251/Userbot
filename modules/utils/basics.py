@@ -49,6 +49,14 @@ HELP_INDEX = f"""
 ◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆
 
 ◆━━━━━━━━━━━━━━━◆
+     🎵 <b>MUSIC / VC</b>
+◆━━━━━━━━━━━━━━━◆
+  ▶️.play / .vply / .cplay / .cvply → Play song/video
+  ⏸️.pause ▶️.resume ⏭️.skip ⏹️.stop
+  🔇.vmute 🔊.vunmute → VC mute/unmute
+◆━━━━━━━━━━━━━━━◆
+
+◆━━━━━━━━━━━━━━━◆
      👑 <b>MALIK KE HUKUM — OWNER</b>
 ◆━━━━━━━━━━━━━━━◆
   🌟.addsudo → Sudo user banao
@@ -152,10 +160,32 @@ HELP_INDEX = f"""
   ℹ️.info 📖.help
 ◆━━━━━━━━━━━━━━━◆
 
-Type <code>.help &lt;category&gt;</code> (owner/login/global/mod/warn/broadcast/sha/bro/chat/welcome/fun/utility) for full usage + examples.
+Type <code>.help &lt;category&gt;</code> (vc/owner/login/global/mod/warn/broadcast/sha/bro/chat/welcome/fun/utility) for full usage + examples.
 """
 
 HELP_PAGES = {
+    "vc": """
+🎵 <b>Music / VC</b>
+━━━━━━━━━━━━━━━━━━━━
+
+<code>.play &lt;song or link&gt;</code> — play audio
+<code>.vply &lt;song or link&gt;</code> — play video
+<code>.cplay</code> / <code>.cvply</code> — same, in a channel's linked VC
+
+If something's already playing, a new <code>.play</code> adds to the queue
+instead of interrupting.
+
+<code>.pause</code> / <code>.resume</code>
+<code>.skip</code> — plays the next queued track, or stops if queue is empty
+<code>.stop</code> — stops and leaves the VC entirely
+
+<code>.vmute</code> / <code>.vunmute</code>
+Mutes/unmutes the VC stream itself (not a member — see <code>.help mod</code>
+for muting people).
+
+Requires an active voice chat in the group (or permission for the account
+to start one).
+""",
     "owner": """
 👑 <b>Owner Commands</b>
 ━━━━━━━━━━━━━━━━━━━━
