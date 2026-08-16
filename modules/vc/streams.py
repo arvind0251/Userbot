@@ -31,7 +31,12 @@ def _baby_fetch_sync(vidid: str, want_video: bool) -> str:
     url = f"{BASE_URL}/api/{kind}"
     params = {"query": vidid, "download": "true", "api": API_KEY}
     resp = requests.get(url, params=params, timeout=30)
-    resp.raise_for_status()
+    if not resp.ok:
+        # Surface the actual response body (BabyAPI usually explains *why*
+        # in the body — invalid/expired key, rate limit, IP block, etc.)
+        # since resp.raise_for_status() alone only gives the status code.
+        body = resp.text[:300]
+        raise RuntimeError(f"[BabyAPI] HTTP {resp.status_code}: {body}")
     data = resp.json()
     stream_url = data.get("stream") or data.get("url") or data.get("stream_url")
     if not stream_url:
