@@ -1,7 +1,10 @@
 """
-.clone <bot_token> lets someone run their own branded bot that reuses this
-userbot's basic utility commands (ping/alive/id/help). The clone is a plain
-Pyrogram bot Client, separate from the main account.
+.clone <bot_token> lets someone run their own branded bot that gets the
+full command set (including music/VC) — every handler currently
+registered on the main userbot is copied onto the clone automatically.
+The clone is a plain Pyrogram bot Client, separate from the main account,
+and gets its own independent VC engine so it can play music through its
+own identity.
 """
 from pyrogram import Client, filters
 from pyrogram.types import Message
@@ -9,6 +12,7 @@ from pyrogram.errors import RPCError
 
 from core.clients import app
 from core.clone_handlers import register_common_handlers
+from core.call_manager import ensure_started
 from config import API_ID, API_HASH
 from modules.owner.sudoers import sudo_only
 
@@ -46,12 +50,16 @@ async def clone_cmd(client, message: Message):
         )
         await register_common_handlers(clone_client)
         await clone_client.start()
+        try:
+            await ensure_started(clone_client)
+        except Exception:
+            pass  # VC engine will still lazy-start on first .play if this fails
         CLONES[bot_token] = clone_client
         me = await clone_client.get_me()
         await status.edit_text(
             f"✅ Clone started: @{me.username}\n\n"
-            f"It shares this account's basic utility commands. "
-            f"@{me.username} is now live."
+            f"It has the full command set, including music — VC playback "
+            f"joins through this bot's own identity."
         )
     except RPCError as e:
         await status.edit_text(f"❌ Failed to start clone: `{e}`")

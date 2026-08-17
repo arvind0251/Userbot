@@ -2,7 +2,7 @@ from pyrogram import filters
 from pyrogram.types import Message
 
 from core.clients import app
-from core.call_manager import play_track, get_queue, CURRENT
+from core.call_manager import play_track, get_queue, get_current
 from modules.vc.streams import get_result
 from modules.owner.sudoers import sudo_only
 
@@ -32,20 +32,21 @@ async def play_cmd(client, message: Message):
         await status.edit_text(f"❌ Failed to fetch stream: `{e}`")
         return
 
-    queue = get_queue(chat_id)
+    queue = get_queue(client, chat_id)
+    current = get_current(client)
 
-    if chat_id in CURRENT:
+    if chat_id in current:
         queue.append(result)
         await status.edit_text(
             f"➕ Queued <b>{result['title']}</b> (position {len(queue)})"
         )
         return
 
-    CURRENT[chat_id] = result
+    current[chat_id] = result
     try:
-        await play_track(chat_id, result["stream_url"], video=is_video)
+        await play_track(client, chat_id, result["stream_url"], video=is_video)
     except Exception as e:
-        CURRENT.pop(chat_id, None)
+        current.pop(chat_id, None)
         err_text = str(e) or type(e).__name__
         await status.edit_text(
             f"❌ Failed to start stream: `{err_text}`\n"

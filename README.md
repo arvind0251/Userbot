@@ -12,6 +12,9 @@ self-service `.login`/`.clone` flow, which is intentionally open to anyone
   Uses [Kurigram](https://github.com/KurimuzonAkuma/pyrogram) + PyTgCalls v2 for the VC
   connection and BabyAPI (`BASE_URL`/`API_KEY`) as the stream source. An optional
   `ASSISTANT_SESSION` account can join VCs instead of tying up the main account.
+  **Every account gets its own independent VC engine** — this includes any account
+  added via `.clone`/`.login` (see below), so multiple logged-in accounts can each
+  play music through their own identity at the same time, not just the main account.
 - **Owner/Sudo system**: `.addsudo`, `.delsudo`, `.sudolist` — gate all sensitive commands.
 - **PM Guard**: warns and eventually blocks strangers who spam the userbot's PMs.
   `.approve` / `.unapprove` / `.approved` let sudo users exempt specific people from
@@ -95,7 +98,7 @@ userbot/
 ├── config.py                env var loading
 ├── core/
 │   ├── clients.py             Pyrogram clients (app / bot / assistant)
-│   ├── call_manager.py        PyTgCalls instance + queue helpers
+│   ├── call_manager.py        per-client PyTgCalls instances + queue helpers
 │   └── clone_handlers.py      copies app's full handler set onto clone/login clients
 ├── database/
 │   └── mongo.py               sudoers / gban / warns / chats / approved — local storage.json file

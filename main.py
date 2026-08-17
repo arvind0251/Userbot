@@ -2,7 +2,7 @@ import asyncio
 import importlib
 
 from core.clients import app, bot, assistant
-from core.call_manager import pytgcalls
+from core.call_manager import ensure_started
 from core.autodelete import register_trigger_autodelete
 from database.mongo import add_chat
 from modules.owner.sudoers import load_sudoers
@@ -65,7 +65,9 @@ async def main():
         await assistant.start()
         print("[Bot] Assistant client started.")
 
-    await pytgcalls.start()
+    # Eagerly start the main account's VC engine (lazy per-client startup
+    # for clones/logins happens automatically on their first .play).
+    await ensure_started(app)
     print("[Bot] PyTgCalls started.")
 
     print("[Bot] Bot is ready.")

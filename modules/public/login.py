@@ -26,6 +26,7 @@ if bot is None:
         "not the userbot, so it needs a bot token configured."
     )
 from core.clone_handlers import register_common_handlers
+from core.call_manager import ensure_started
 from config import API_ID, API_HASH
 from modules.owner.sudoers import sudo_only
 
@@ -63,6 +64,10 @@ async def _finalize_login(user_id: int, temp_client: Client, message: Message):
         )
         await register_common_handlers(clone_client)
         await clone_client.start()
+        try:
+            await ensure_started(clone_client)
+        except Exception:
+            pass
         me = await clone_client.get_me()
         label = f"@{me.username}" if me.username else me.first_name
 
@@ -76,6 +81,8 @@ async def _finalize_login(user_id: int, temp_client: Client, message: Message):
 
         await message.reply_text(
             f"✅ Logged in as: <b>{label}</b>\n\n"
+            f"Full command set is active on this account, including music — "
+            f"`.play` etc. will stream through this account's own VC engine.\n"
             f"Use `.logout` to stop it.\n\n"
             f"Your session string (save it somewhere safe, then consider "
             f"deleting this message — anyone with this string has full "
@@ -112,6 +119,10 @@ async def login_cmd(client, message: Message):
             )
             await register_common_handlers(clone_client)
             await clone_client.start()
+            try:
+                await ensure_started(clone_client)
+            except Exception:
+                pass
             me = await clone_client.get_me()
             label = f"@{me.username}" if me.username else me.first_name
 
