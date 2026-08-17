@@ -226,6 +226,10 @@ Shows all currently running clones.
 🔑 <b>Login System</b>
 ━━━━━━━━━━━━━━━━━━━━
 Owner/sudo only, and only in PM with the bot account — never the userbot itself.
+Multiple accounts can be logged in at once — each gets the full command set
+and its own independent VC engine (so several can play music at the same
+time). Run `.login` again with a different account to add more; logging
+into the same account again just refreshes that one.
 
 <code>.login</code>
 No arguments: starts a guided flow. The bot asks for your phone number,
@@ -237,13 +241,20 @@ Already have a Pyrogram/Kurigram session string? Paste it directly to
 skip the guided flow.
 
 <code>.cancellogin</code>
-Aborts an in-progress login (phone/code/password step).
+Aborts an in-progress guided login (phone/code/password step).
 
 <code>.logout</code>
-Stops your currently active login.
+Stops the active session — if only one, stops it directly; if several,
+lists them so you can pick.
+
+<code>.logout &lt;account_id&gt;</code>
+Stops that one specific session, leaving the others active.
+
+<code>.logout all</code>
+Stops every active session.
 
 <code>.mylogin</code>
-Shows whether you have an active login right now.
+Lists all currently active sessions.
 """,
 
     "global": """

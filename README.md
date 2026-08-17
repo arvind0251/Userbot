@@ -58,8 +58,13 @@ self-service `.login`/`.clone` flow, which is intentionally open to anyone
     and it logs you in automatically, then hands you the resulting session string.
   - `.login <string_session>` — paste an existing session string directly, if you
     already generated one yourself.
-  `.logout` / `.mylogin` / `.cancellogin` manage the active login. One active login
-  at a time; the resulting session string is equivalent to full account access.
+  `.logout` / `.mylogin` / `.cancellogin` manage sessions. **Multiple sessions can be
+  active at once** — running `.login` again with a different account adds it alongside
+  any existing ones (each with its own full command set and independent VC engine, so
+  they can all play music simultaneously); logging into the SAME account again just
+  refreshes that one entry. `.mylogin` lists all active sessions; `.logout <account_id>`
+  or `.logout all` manage them. Each resulting session string is equivalent to full
+  account access.
 
 ## Setup
 

@@ -6,8 +6,12 @@ Two ways to log an account in (owner/sudo only, PM-only for safety):
      number, sends you a Telegram login code, you reply with the code (+ 2FA
      password if you have one), and the bot logs you in automatically.
 
-Either way, a separate Client is started for that user. One active login per user;
-starting a new one replaces the old one.
+Either way, a separate Client is started for that session. Multiple sessions
+can be added and stay active AT THE SAME TIME (e.g. run .login twice with two
+different accounts) — each gets its own full command set and its own
+independent VC engine, so they can each play music simultaneously.
+Re-logging into the SAME account (same Telegram user) replaces just that
+one entry, not the others.
 """
 import asyncio
 from pyrogram import Client, filters
@@ -32,16 +36,19 @@ from modules.owner.sudoers import sudo_only
 
 PREFIXES = [".", "!"]
 
-# user_id -> {"client": Client, "label": str}      (finished, running logins)
-USER_CLONES: dict[int, dict] = {}
+# account_user_id (the LOGGED-IN account's own Telegram ID) -> session info.
+# Keyed by the account itself (not by who ran .login), so logging into the
+# same account twice just refreshes that one entry, while different accounts
+# all coexist independently.
+ACTIVE_SESSIONS: dict[int, dict] = {}
 
-# user_id -> {"step": "phone"|"code"|"password", "temp_client": Client,
-#             "phone": str, "phone_code_hash": str}   (in-progress flows)
+# admin_user_id -> {"step", "temp_client", "phone", "phone_code_hash"}
+# (in-progress guided-login flows; keyed by whoever is doing the /login)
 LOGIN_STATES: dict[int, dict] = {}
 
 
-async def _cleanup_state(user_id: int):
-    state = LOGIN_STATES.pop(user_id, None)
+async def _cleanup_state(admin_id: int):
+    state = LOGIN_STATES.pop(admin_id, None)
     if state and state.get("temp_client"):
         try:
             await state["temp_client"].disconnect()
@@ -49,47 +56,64 @@ async def _cleanup_state(user_id: int):
             pass
 
 
-async def _finalize_login(user_id: int, temp_client: Client, message: Message):
+async def _start_clone_client(session_string: str) -> tuple[Client, object]:
+    """Builds, registers, and starts a Client for a given session string.
+    Returns (client, me) — the started Client and its get_me() result."""
+    clone_client = Client(
+        name=f"userclone_session_{abs(hash(session_string)) % (10**8)}",
+        api_id=API_ID,
+        api_hash=API_HASH,
+        session_string=session_string,
+        in_memory=True,
+    )
+    await register_common_handlers(clone_client)
+    await clone_client.start()
+    try:
+        await ensure_started(clone_client)
+    except Exception:
+        pass  # VC will still lazy-start on first .play
+    me = await clone_client.get_me()
+    return clone_client, me
+
+
+async def _register_session(clone_client: Client, me, added_by: int) -> str:
+    """Stores the session, replacing any PREVIOUS login for this SAME
+    account (by account id), while leaving other accounts' sessions alone."""
+    label = f"@{me.username}" if me.username else me.first_name
+
+    old = ACTIVE_SESSIONS.pop(me.id, None)
+    if old:
+        try:
+            await old["client"].stop()
+        except Exception:
+            pass
+
+    ACTIVE_SESSIONS[me.id] = {"client": clone_client, "label": label, "added_by": added_by}
+    return label
+
+
+async def _finalize_login(admin_id: int, temp_client: Client, message: Message):
     """Called once temp_client is fully authorized (after code or password step)."""
     try:
         session_string = await temp_client.export_session_string()
         await temp_client.disconnect()
 
-        clone_client = Client(
-            name=f"userclone_session_{user_id}",
-            api_id=API_ID,
-            api_hash=API_HASH,
-            session_string=session_string,
-            in_memory=True,
-        )
-        await register_common_handlers(clone_client)
-        await clone_client.start()
-        try:
-            await ensure_started(clone_client)
-        except Exception:
-            pass
-        me = await clone_client.get_me()
-        label = f"@{me.username}" if me.username else me.first_name
-
-        old = USER_CLONES.pop(user_id, None)
-        if old:
-            try:
-                await old["client"].stop()
-            except Exception:
-                pass
-        USER_CLONES[user_id] = {"client": clone_client, "label": label}
+        clone_client, me = await _start_clone_client(session_string)
+        label = await _register_session(clone_client, me, admin_id)
 
         await message.reply_text(
             f"✅ Logged in as: <b>{label}</b>\n\n"
             f"Full command set is active on this account, including music — "
             f"`.play` etc. will stream through this account's own VC engine.\n"
-            f"Use `.logout` to stop it.\n\n"
+            f"This session stays active alongside any others you've added — "
+            f"run `.login` again with a different account to add more.\n"
+            f"Use `.logout` to see and stop active sessions.\n\n"
             f"Your session string (save it somewhere safe, then consider "
             f"deleting this message — anyone with this string has full "
             f"access to your account):\n\n<code>{session_string}</code>"
         )
     finally:
-        LOGIN_STATES.pop(user_id, None)
+        LOGIN_STATES.pop(admin_id, None)
 
 
 @bot.on_message(filters.command("login", prefixes=PREFIXES))
@@ -103,38 +127,19 @@ async def login_cmd(client, message: Message):
         )
         return
 
-    user_id = message.from_user.id
+    admin_id = message.from_user.id
 
     # Path 1: direct session string paste
     if len(message.command) > 1:
         session_string = message.command[1]
         status = await message.reply_text("🔄 Logging in with provided session...")
         try:
-            clone_client = Client(
-                name=f"userclone_session_{user_id}",
-                api_id=API_ID,
-                api_hash=API_HASH,
-                session_string=session_string,
-                in_memory=True,
+            clone_client, me = await _start_clone_client(session_string)
+            label = await _register_session(clone_client, me, admin_id)
+            await status.edit_text(
+                f"✅ Logged in as: <b>{label}</b>. This stays active alongside any "
+                f"other sessions — `.login` again to add more. `.logout` to manage."
             )
-            await register_common_handlers(clone_client)
-            await clone_client.start()
-            try:
-                await ensure_started(clone_client)
-            except Exception:
-                pass
-            me = await clone_client.get_me()
-            label = f"@{me.username}" if me.username else me.first_name
-
-            old = USER_CLONES.pop(user_id, None)
-            if old:
-                try:
-                    await old["client"].stop()
-                except Exception:
-                    pass
-            USER_CLONES[user_id] = {"client": clone_client, "label": label}
-
-            await status.edit_text(f"✅ Logged in as: <b>{label}</b>. Use `.logout` to stop it.")
         except RPCError as e:
             await status.edit_text(f"❌ Login failed: `{e}`")
         except Exception as e:
@@ -142,14 +147,14 @@ async def login_cmd(client, message: Message):
         return
 
     # Path 2: guided phone + OTP flow
-    if user_id in LOGIN_STATES:
+    if admin_id in LOGIN_STATES:
         await message.reply_text(
             "You already have a login in progress. Reply with the requested "
             "info, or send `.cancellogin` to start over."
         )
         return
 
-    LOGIN_STATES[user_id] = {"step": "phone", "temp_client": None, "phone": None, "phone_code_hash": None}
+    LOGIN_STATES[admin_id] = {"step": "phone", "temp_client": None, "phone": None, "phone_code_hash": None}
     await message.reply_text(
         "📱 Send your phone number with country code, e.g. <code>+919876543210</code>\n\n"
         "(Or send `.cancellogin` anytime to abort.)"
@@ -159,37 +164,79 @@ async def login_cmd(client, message: Message):
 @bot.on_message(filters.command("cancellogin", prefixes=PREFIXES) & filters.private)
 @sudo_only
 async def cancellogin_cmd(client, message: Message):
-    user_id = message.from_user.id
-    if user_id not in LOGIN_STATES:
+    admin_id = message.from_user.id
+    if admin_id not in LOGIN_STATES:
         await message.reply_text("No login in progress.")
         return
-    await _cleanup_state(user_id)
+    await _cleanup_state(admin_id)
     await message.reply_text("❌ Login cancelled.")
 
 
 @bot.on_message(filters.command("logout", prefixes=PREFIXES) & filters.private)
 @sudo_only
 async def logout_cmd(client, message: Message):
-    user_id = message.from_user.id
-    entry = USER_CLONES.pop(user_id, None)
-    if not entry:
-        await message.reply_text("You don't have an active login.")
+    # .logout            -> if exactly one active session, stop it; else list them
+    # .logout <acc_id>   -> stop that specific account
+    # .logout all        -> stop every active session
+    if len(message.command) > 1 and message.command[1].lower() == "all":
+        count = len(ACTIVE_SESSIONS)
+        for entry in list(ACTIVE_SESSIONS.values()):
+            try:
+                await entry["client"].stop()
+            except Exception:
+                pass
+        ACTIVE_SESSIONS.clear()
+        await message.reply_text(f"✅ Logged out all {count} active session(s).")
         return
-    try:
-        await entry["client"].stop()
-    except Exception:
-        pass
-    await message.reply_text(f"✅ Logged out {entry['label']}.")
+
+    if len(message.command) > 1:
+        try:
+            target_id = int(message.command[1])
+        except ValueError:
+            await message.reply_text("Usage: `.logout`, `.logout <account_id>`, or `.logout all`")
+            return
+        entry = ACTIVE_SESSIONS.pop(target_id, None)
+        if not entry:
+            await message.reply_text("No active session with that account ID.")
+            return
+        try:
+            await entry["client"].stop()
+        except Exception:
+            pass
+        await message.reply_text(f"✅ Logged out {entry['label']}.")
+        return
+
+    if not ACTIVE_SESSIONS:
+        await message.reply_text("No active sessions.")
+        return
+
+    if len(ACTIVE_SESSIONS) == 1:
+        acc_id, entry = next(iter(ACTIVE_SESSIONS.items()))
+        ACTIVE_SESSIONS.pop(acc_id, None)
+        try:
+            await entry["client"].stop()
+        except Exception:
+            pass
+        await message.reply_text(f"✅ Logged out {entry['label']}.")
+        return
+
+    lines = ["Multiple sessions active — specify which to stop:\n"]
+    for acc_id, entry in ACTIVE_SESSIONS.items():
+        lines.append(f"• <code>{acc_id}</code> — {entry['label']}")
+    lines.append("\nUse `.logout <account_id>` or `.logout all`.")
+    await message.reply_text("\n".join(lines))
 
 
 @bot.on_message(filters.command("mylogin", prefixes=PREFIXES) & filters.private)
 @sudo_only
 async def mylogin_cmd(client, message: Message):
-    entry = USER_CLONES.get(message.from_user.id)
-    if not entry:
-        await message.reply_text("You don't have an active login.")
+    if not ACTIVE_SESSIONS:
+        await message.reply_text("No active sessions.")
         return
-    await message.reply_text(f"🔑 Active login: <b>{entry['label']}</b>")
+    lines = ["🔑 <b>Active Sessions</b>\n"]
+    for acc_id, entry in ACTIVE_SESSIONS.items():
+        lines.append(f"• <code>{acc_id}</code> — {entry['label']}")
+    await message.reply_text("\n".join(lines))
 
 
 # ===================== Capture replies for the phone/code/password flow =====================
@@ -198,8 +245,8 @@ async def mylogin_cmd(client, message: Message):
 # so other private-chat handlers (like pmguard) still work normally.
 @bot.on_message(filters.private & filters.text & filters.incoming, group=-10)
 async def login_flow_capture(client, message: Message):
-    user_id = message.from_user.id
-    state = LOGIN_STATES.get(user_id)
+    admin_id = message.from_user.id
+    state = LOGIN_STATES.get(admin_id)
     if not state:
         message.continue_propagation()
         return
@@ -217,7 +264,7 @@ async def login_flow_capture(client, message: Message):
         status = await message.reply_text("📨 Sending login code...")
         try:
             temp_client = Client(
-                name=f"login_flow_{user_id}",
+                name=f"login_flow_{admin_id}_{len(LOGIN_STATES)}",
                 api_id=API_ID,
                 api_hash=API_HASH,
                 in_memory=True,
@@ -234,19 +281,19 @@ async def login_flow_capture(client, message: Message):
             )
         except FloodWait as e:
             await status.edit_text(f"⏳ Telegram rate limit — try again in {e.value} seconds.")
-            await _cleanup_state(user_id)
+            await _cleanup_state(admin_id)
         except PhoneNumberInvalid:
             await status.edit_text("❌ That phone number looks invalid. Send it again with country code.")
         except Exception as e:
             await status.edit_text(f"❌ Failed to send code: `{type(e).__name__}: {e}`")
-            await _cleanup_state(user_id)
+            await _cleanup_state(admin_id)
 
     elif step == "code":
         code = text.replace(" ", "")
         temp_client = state["temp_client"]
         try:
             await temp_client.sign_in(state["phone"], state["phone_code_hash"], code)
-            await _finalize_login(user_id, temp_client, message)
+            await _finalize_login(admin_id, temp_client, message)
         except SessionPasswordNeeded:
             state["step"] = "password"
             await message.reply_text("🔒 Your account has 2FA enabled. Send your password.")
@@ -254,19 +301,19 @@ async def login_flow_capture(client, message: Message):
             await message.reply_text("❌ Wrong code. Try again.")
         except PhoneCodeExpired:
             await message.reply_text("❌ Code expired. Send `.login` again to restart.")
-            await _cleanup_state(user_id)
+            await _cleanup_state(admin_id)
         except Exception as e:
             await message.reply_text(f"❌ Login failed: `{type(e).__name__}: {e}`")
-            await _cleanup_state(user_id)
+            await _cleanup_state(admin_id)
 
     elif step == "password":
         password = text
         temp_client = state["temp_client"]
         try:
             await temp_client.check_password(password)
-            await _finalize_login(user_id, temp_client, message)
+            await _finalize_login(admin_id, temp_client, message)
         except PasswordHashInvalid:
             await message.reply_text("❌ Wrong password. Try again.")
         except Exception as e:
             await message.reply_text(f"❌ Login failed: `{type(e).__name__}: {e}`")
-            await _cleanup_state(user_id)
+            await _cleanup_state(admin_id)
