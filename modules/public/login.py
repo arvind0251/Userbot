@@ -12,6 +12,11 @@ different accounts) — each gets its own full command set and its own
 independent VC engine, so they can each play music simultaneously.
 Re-logging into the SAME account (same Telegram user) replaces just that
 one entry, not the others.
+
+OWNERSHIP: the bot owner (OWNER_ID) can use, list, and log out ANY active
+session. A regular sudo user can only use/list/log out sessions THEY
+personally added — one sudo user can't reach into another's logged-in
+account, even though both are sudo.
 """
 import asyncio
 from pyrogram import Client, filters
@@ -31,7 +36,7 @@ if bot is None:
     )
 from core.clone_handlers import register_common_handlers
 from core.call_manager import ensure_started
-from config import API_ID, API_HASH
+from config import API_ID, API_HASH, OWNER_ID
 from modules.owner.sudoers import sudo_only
 
 PREFIXES = [".", "!"]
@@ -42,9 +47,19 @@ PREFIXES = [".", "!"]
 # all coexist independently.
 ACTIVE_SESSIONS: dict[int, dict] = {}
 
+# id(client) -> the same entry dict stored in ACTIVE_SESSIONS, so the
+# per-session ownership gate (registered on each clone) can look up "who
+# added this session" from just the Client object it receives at runtime.
+CLIENT_TO_SESSION: dict[int, dict] = {}
+
 # admin_user_id -> {"step", "temp_client", "phone", "phone_code_hash"}
 # (in-progress guided-login flows; keyed by whoever is doing the /login)
 LOGIN_STATES: dict[int, dict] = {}
+
+
+def _can_manage(entry: dict, requester_id: int) -> bool:
+    """Owner can manage any session; anyone else only their own."""
+    return requester_id == OWNER_ID or entry.get("added_by") == requester_id
 
 
 async def _cleanup_state(admin_id: int):
@@ -54,6 +69,34 @@ async def _cleanup_state(admin_id: int):
             await state["temp_client"].disconnect()
         except Exception:
             pass
+
+
+def _register_ownership_gate(clone_client: Client):
+    """Blocks command messages on this clone from anyone except the owner
+    or whoever originally added this specific session. Runs very early
+    (group=-30) so it's checked before the full copied command set."""
+    @clone_client.on_message(filters.text & filters.regex(r"^[.!]\w"), group=-30)
+    async def _gate(client, message: Message):
+        entry = CLIENT_TO_SESSION.get(id(client))
+        if entry:
+            sender_id = message.from_user.id if message.from_user else None
+            if sender_id is None or not _can_manage(entry, sender_id):
+                await message.reply_text(
+                    "🚫 You can only control sessions you added yourself."
+                )
+                return
+        message.continue_propagation()
+
+
+async def _stop_and_forget(account_id: int):
+    entry = ACTIVE_SESSIONS.pop(account_id, None)
+    if entry:
+        CLIENT_TO_SESSION.pop(id(entry["client"]), None)
+        try:
+            await entry["client"].stop()
+        except Exception:
+            pass
+    return entry
 
 
 async def _start_clone_client(session_string: str) -> tuple[Client, object]:
@@ -67,6 +110,7 @@ async def _start_clone_client(session_string: str) -> tuple[Client, object]:
         in_memory=True,
     )
     await register_common_handlers(clone_client)
+    _register_ownership_gate(clone_client)
     await clone_client.start()
     try:
         await ensure_started(clone_client)
@@ -81,14 +125,11 @@ async def _register_session(clone_client: Client, me, added_by: int) -> str:
     account (by account id), while leaving other accounts' sessions alone."""
     label = f"@{me.username}" if me.username else me.first_name
 
-    old = ACTIVE_SESSIONS.pop(me.id, None)
-    if old:
-        try:
-            await old["client"].stop()
-        except Exception:
-            pass
+    await _stop_and_forget(me.id)
 
-    ACTIVE_SESSIONS[me.id] = {"client": clone_client, "label": label, "added_by": added_by}
+    entry = {"client": clone_client, "label": label, "added_by": added_by}
+    ACTIVE_SESSIONS[me.id] = entry
+    CLIENT_TO_SESSION[id(clone_client)] = entry
     return label
 
 
@@ -105,9 +146,10 @@ async def _finalize_login(admin_id: int, temp_client: Client, message: Message):
             f"✅ Logged in as: <b>{label}</b>\n\n"
             f"Full command set is active on this account, including music — "
             f"`.play` etc. will stream through this account's own VC engine.\n"
-            f"This session stays active alongside any others you've added — "
-            f"run `.login` again with a different account to add more.\n"
-            f"Use `.logout` to see and stop active sessions.\n\n"
+            f"This session stays active alongside any others — run `.login` "
+            f"again with a different account to add more. Only you (and the "
+            f"owner) can control this session.\n"
+            f"Use `.logout` to see and stop your active sessions.\n\n"
             f"Your session string (save it somewhere safe, then consider "
             f"deleting this message — anyone with this string has full "
             f"access to your account):\n\n<code>{session_string}</code>"
@@ -175,18 +217,22 @@ async def cancellogin_cmd(client, message: Message):
 @bot.on_message(filters.command("logout", prefixes=PREFIXES) & filters.private)
 @sudo_only
 async def logout_cmd(client, message: Message):
-    # .logout            -> if exactly one active session, stop it; else list them
-    # .logout <acc_id>   -> stop that specific account
-    # .logout all        -> stop every active session
+    # .logout            -> if exactly one of YOUR sessions, stop it; else list them
+    # .logout <acc_id>   -> stop that specific account (must be yours, or you're owner)
+    # .logout all        -> stop every session YOU'RE allowed to manage
+    requester_id = message.from_user.id
+    mine = {aid: e for aid, e in ACTIVE_SESSIONS.items() if _can_manage(e, requester_id)}
+
     if len(message.command) > 1 and message.command[1].lower() == "all":
-        count = len(ACTIVE_SESSIONS)
-        for entry in list(ACTIVE_SESSIONS.values()):
-            try:
-                await entry["client"].stop()
-            except Exception:
-                pass
-        ACTIVE_SESSIONS.clear()
-        await message.reply_text(f"✅ Logged out all {count} active session(s).")
+        if not mine:
+            await message.reply_text("No sessions to log out.")
+            return
+        count = 0
+        for aid in list(mine.keys()):
+            if await _stop_and_forget(aid):
+                count += 1
+        scope = "all" if requester_id == OWNER_ID else "your"
+        await message.reply_text(f"✅ Logged out {count} {scope} session(s).")
         return
 
     if len(message.command) > 1:
@@ -195,33 +241,31 @@ async def logout_cmd(client, message: Message):
         except ValueError:
             await message.reply_text("Usage: `.logout`, `.logout <account_id>`, or `.logout all`")
             return
-        entry = ACTIVE_SESSIONS.pop(target_id, None)
+        entry = ACTIVE_SESSIONS.get(target_id)
         if not entry:
             await message.reply_text("No active session with that account ID.")
             return
-        try:
-            await entry["client"].stop()
-        except Exception:
-            pass
-        await message.reply_text(f"✅ Logged out {entry['label']}.")
+        if not _can_manage(entry, requester_id):
+            await message.reply_text("🚫 That session isn't yours to log out.")
+            return
+        label = entry["label"]
+        await _stop_and_forget(target_id)
+        await message.reply_text(f"✅ Logged out {label}.")
         return
 
-    if not ACTIVE_SESSIONS:
+    if not mine:
         await message.reply_text("No active sessions.")
         return
 
-    if len(ACTIVE_SESSIONS) == 1:
-        acc_id, entry = next(iter(ACTIVE_SESSIONS.items()))
-        ACTIVE_SESSIONS.pop(acc_id, None)
-        try:
-            await entry["client"].stop()
-        except Exception:
-            pass
-        await message.reply_text(f"✅ Logged out {entry['label']}.")
+    if len(mine) == 1:
+        acc_id, entry = next(iter(mine.items()))
+        label = entry["label"]
+        await _stop_and_forget(acc_id)
+        await message.reply_text(f"✅ Logged out {label}.")
         return
 
     lines = ["Multiple sessions active — specify which to stop:\n"]
-    for acc_id, entry in ACTIVE_SESSIONS.items():
+    for acc_id, entry in mine.items():
         lines.append(f"• <code>{acc_id}</code> — {entry['label']}")
     lines.append("\nUse `.logout <account_id>` or `.logout all`.")
     await message.reply_text("\n".join(lines))
@@ -230,11 +274,14 @@ async def logout_cmd(client, message: Message):
 @bot.on_message(filters.command("mylogin", prefixes=PREFIXES) & filters.private)
 @sudo_only
 async def mylogin_cmd(client, message: Message):
-    if not ACTIVE_SESSIONS:
+    requester_id = message.from_user.id
+    mine = {aid: e for aid, e in ACTIVE_SESSIONS.items() if _can_manage(e, requester_id)}
+    if not mine:
         await message.reply_text("No active sessions.")
         return
-    lines = ["🔑 <b>Active Sessions</b>\n"]
-    for acc_id, entry in ACTIVE_SESSIONS.items():
+    title = "🔑 <b>All Active Sessions</b>" if requester_id == OWNER_ID else "🔑 <b>Your Active Sessions</b>"
+    lines = [title + "\n"]
+    for acc_id, entry in mine.items():
         lines.append(f"• <code>{acc_id}</code> — {entry['label']}")
     await message.reply_text("\n".join(lines))
 

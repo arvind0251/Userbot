@@ -62,8 +62,11 @@ self-service `.login`/`.clone` flow, which is intentionally open to anyone
   active at once** — running `.login` again with a different account adds it alongside
   any existing ones (each with its own full command set and independent VC engine, so
   they can all play music simultaneously); logging into the SAME account again just
-  refreshes that one entry. `.mylogin` lists all active sessions; `.logout <account_id>`
-  or `.logout all` manage them. Each resulting session string is equivalent to full
+  refreshes that one entry. **Ownership**: the bot owner can use/list/log out ANY active
+  session, but a regular sudo user can only use/list/log out sessions they personally
+  added — one sudo user can't reach into another's logged-in account. `.mylogin` lists
+  sessions you're allowed to manage; `.logout <account_id>` or `.logout all` manage them.
+  Each resulting session string is equivalent to full
   account access.
 
 ## Setup

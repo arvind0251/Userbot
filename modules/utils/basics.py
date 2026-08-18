@@ -231,6 +231,10 @@ and its own independent VC engine (so several can play music at the same
 time). Run `.login` again with a different account to add more; logging
 into the same account again just refreshes that one.
 
+<b>Ownership:</b> the owner can use/manage ANY session. A regular sudo user
+can only use/manage sessions THEY personally added — you can't reach into
+someone else's logged-in account, even as sudo.
+
 <code>.login</code>
 No arguments: starts a guided flow. The bot asks for your phone number,
 sends you a Telegram login code, you reply with the code (and your 2FA
@@ -244,17 +248,18 @@ skip the guided flow.
 Aborts an in-progress guided login (phone/code/password step).
 
 <code>.logout</code>
-Stops the active session — if only one, stops it directly; if several,
-lists them so you can pick.
+Stops one of YOUR sessions — if only one, stops it directly; if several,
+lists them so you can pick. (Owner sees/manages everyone's.)
 
 <code>.logout &lt;account_id&gt;</code>
-Stops that one specific session, leaving the others active.
+Stops that one specific session (must be yours, or you're the owner),
+leaving others active.
 
 <code>.logout all</code>
-Stops every active session.
+Stops every session you're allowed to manage.
 
 <code>.mylogin</code>
-Lists all currently active sessions.
+Lists sessions you're allowed to manage (all of them, if you're the owner).
 """,
 
     "global": """
