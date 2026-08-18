@@ -133,21 +133,22 @@ async def _register_session(clone_client: Client, me, added_by: int) -> str:
     return label
 
 
-async def _finalize_login(admin_id: int, temp_client: Client, message: Message):
+async def _finalize_login(admin_id: int, temp_client: Client, message: Message, owner_for_session: int):
     """Called once temp_client is fully authorized (after code or password step)."""
     try:
         session_string = await temp_client.export_session_string()
         await temp_client.disconnect()
 
         clone_client, me = await _start_clone_client(session_string)
-        label = await _register_session(clone_client, me, admin_id)
+        label = await _register_session(clone_client, me, owner_for_session)
 
+        who = "You" if owner_for_session == admin_id else f"User <code>{owner_for_session}</code>"
         await message.reply_text(
             f"✅ Logged in as: <b>{label}</b>\n\n"
             f"Full command set is active on this account, including music — "
             f"`.play` etc. will stream through this account's own VC engine.\n"
             f"This session stays active alongside any others — run `.login` "
-            f"again with a different account to add more. Only you (and the "
+            f"again with a different account to add more. {who} (and the "
             f"owner) can control this session.\n"
             f"Use `.logout` to see and stop your active sessions.\n\n"
             f"Your session string (save it somewhere safe, then consider "
@@ -170,17 +171,43 @@ async def login_cmd(client, message: Message):
         return
 
     admin_id = message.from_user.id
+    args = message.command[1:]
+
+    # Only the owner can hand a session's control to someone OTHER than
+    # themselves — a regular sudo user adding a session can only own it.
+    def _parse_target_id(candidate: str):
+        if candidate.isdigit() and len(candidate) <= 15 and admin_id == OWNER_ID:
+            return int(candidate)
+        return None
+
+    owner_for_session = admin_id
+    session_arg = None
+
+    if len(args) == 1:
+        target = _parse_target_id(args[0])
+        if target is not None:
+            # .login <user_id> -> guided flow, but that user (not the owner
+            # running this) will be the one who can control the session.
+            owner_for_session = target
+        else:
+            session_arg = args[0]
+    elif len(args) >= 2:
+        session_arg = args[0]
+        target = _parse_target_id(args[1])
+        if target is not None:
+            owner_for_session = target
 
     # Path 1: direct session string paste
-    if len(message.command) > 1:
-        session_string = message.command[1]
+    if session_arg:
         status = await message.reply_text("🔄 Logging in with provided session...")
         try:
-            clone_client, me = await _start_clone_client(session_string)
-            label = await _register_session(clone_client, me, admin_id)
+            clone_client, me = await _start_clone_client(session_arg)
+            label = await _register_session(clone_client, me, owner_for_session)
+            who = "You" if owner_for_session == admin_id else f"User <code>{owner_for_session}</code>"
             await status.edit_text(
                 f"✅ Logged in as: <b>{label}</b>. This stays active alongside any "
-                f"other sessions — `.login` again to add more. `.logout` to manage."
+                f"other sessions — `.login` again to add more. {who} (and the owner) "
+                f"can manage it. `.logout` to manage."
             )
         except RPCError as e:
             await status.edit_text(f"❌ Login failed: `{e}`")
@@ -196,7 +223,10 @@ async def login_cmd(client, message: Message):
         )
         return
 
-    LOGIN_STATES[admin_id] = {"step": "phone", "temp_client": None, "phone": None, "phone_code_hash": None}
+    LOGIN_STATES[admin_id] = {
+        "step": "phone", "temp_client": None, "phone": None, "phone_code_hash": None,
+        "owner_for_session": owner_for_session,
+    }
     await message.reply_text(
         "📱 Send your phone number with country code, e.g. <code>+919876543210</code>\n\n"
         "(Or send `.cancellogin` anytime to abort.)"
@@ -340,7 +370,7 @@ async def login_flow_capture(client, message: Message):
         temp_client = state["temp_client"]
         try:
             await temp_client.sign_in(state["phone"], state["phone_code_hash"], code)
-            await _finalize_login(admin_id, temp_client, message)
+            await _finalize_login(admin_id, temp_client, message, state.get("owner_for_session", admin_id))
         except SessionPasswordNeeded:
             state["step"] = "password"
             await message.reply_text("🔒 Your account has 2FA enabled. Send your password.")
@@ -358,7 +388,7 @@ async def login_flow_capture(client, message: Message):
         temp_client = state["temp_client"]
         try:
             await temp_client.check_password(password)
-            await _finalize_login(admin_id, temp_client, message)
+            await _finalize_login(admin_id, temp_client, message, state.get("owner_for_session", admin_id))
         except PasswordHashInvalid:
             await message.reply_text("❌ Wrong password. Try again.")
         except Exception as e:

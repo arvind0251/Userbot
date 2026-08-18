@@ -233,7 +233,8 @@ into the same account again just refreshes that one.
 
 <b>Ownership:</b> the owner can use/manage ANY session. A regular sudo user
 can only use/manage sessions THEY personally added — you can't reach into
-someone else's logged-in account, even as sudo.
+someone else's logged-in account, even as sudo. Only the owner can hand a
+session's control to someone else (see below).
 
 <code>.login</code>
 No arguments: starts a guided flow. The bot asks for your phone number,
@@ -243,6 +244,14 @@ password if you have one), and it logs you in automatically.
 <code>.login &lt;session_string&gt;</code>
 Already have a Pyrogram/Kurigram session string? Paste it directly to
 skip the guided flow.
+
+<code>.login &lt;user_id&gt;</code> <i>(owner only)</i>
+Starts the guided flow, but the resulting session belongs to that user —
+they (and the owner) can control it, not you. Handy if you're setting up
+a session on someone else's behalf.
+
+<code>.login &lt;session_string&gt; &lt;user_id&gt;</code> <i>(owner only)</i>
+Same idea, but for a directly-pasted session string.
 
 <code>.cancellogin</code>
 Aborts an in-progress guided login (phone/code/password step).
